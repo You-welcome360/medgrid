@@ -1,0 +1,16 @@
+node_modules
+dist
+.next
+coverage
+
+.env
+.env.local
+.env.development
+.env.production
+
+pnpm-lock.yaml
+
+.vscode
+.idea
+
+.DS_Store
