@@ -8,7 +8,6 @@ coverage
 .env.development
 .env.production
 
-pnpm-lock.yaml
 
 .vscode
 .idea
