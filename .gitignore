@@ -13,3 +13,5 @@ coverage
 .idea
 
 .DS_Store
+
+.ignored_node_modules
