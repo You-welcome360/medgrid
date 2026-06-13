@@ -1,4 +1,4 @@
-import { ResourceType } from '../../enums';
+import { RequestPriority, ResourceType } from '../../enums';
 
 import { PatientInfo } from '../../types';
 
@@ -8,6 +8,8 @@ export interface CreateRequestDTO {
   itemName: string;
 
   quantity: number;
+
+  priority: RequestPriority;
 
   description: string;
 

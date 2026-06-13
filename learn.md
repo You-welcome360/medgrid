@@ -48,3 +48,19 @@ id: string;
 email: string;
 role: UserRole;
 }
+
+Remember:
+
+interface CreateFacilityDTO {
+email: string;
+}
+
+does NOT prevent:
+
+{
+"email": "not-an-email"
+}
+
+from reaching your API.
+
+That's Zod's job.

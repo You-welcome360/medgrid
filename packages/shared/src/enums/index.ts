@@ -7,6 +7,7 @@ export * from './EMCONStatus';
 export * from './EMCONSeverity';
 export * from './ResourceType';
 export * from './AssignableUserRole';
+export * from './RequestPriority';
 
 export * from './BloodGroup';
 export * from './InventoryStatus';

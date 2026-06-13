@@ -1,3 +1,9 @@
-const message: string = 'MEDGRID Gateway Bootstrapped';
+import { createApp } from './app';
 
-console.log(message);
+const PORT = process.env.PORT ?? 4000;
+
+const app = createApp();
+
+app.listen(PORT, () => {
+  console.log(`Gateway running on port ${PORT}`);
+});
