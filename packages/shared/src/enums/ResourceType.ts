@@ -1,0 +1,9 @@
+export enum ResourceType {
+  BLOOD = 'BLOOD',
+
+  PPE = 'PPE',
+
+  MEDICATION = 'MEDICATION',
+
+  MEDICAL_EQUIPMENT = 'MEDICAL_EQUIPMENT',
+}

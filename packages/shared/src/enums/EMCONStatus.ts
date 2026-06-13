@@ -1,0 +1,7 @@
+export enum EMCONStatus {
+  ACTIVE = 'ACTIVE',
+
+  RESOLVED = 'RESOLVED',
+
+  CANCELLED = 'CANCELLED',
+}

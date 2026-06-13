@@ -1,0 +1,9 @@
+export enum FacilityType {
+  HOSPITAL = 'HOSPITAL',
+
+  PHARMACY = 'PHARMACY',
+
+  BLOOD_BANK = 'BLOOD_BANK',
+
+  PPE_SUPPLIER = 'PPE_SUPPLIER',
+}

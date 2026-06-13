@@ -1,0 +1,15 @@
+export enum RequestStatus {
+  PENDING = 'PENDING',
+
+  ACCEPTED = 'ACCEPTED',
+
+  IN_TRANSIT = 'IN_TRANSIT',
+
+  COMPLETED = 'COMPLETED',
+
+  CANCELLED = 'CANCELLED',
+
+  REJECTED = 'REJECTED',
+
+  FAILED = 'FAILED',
+}

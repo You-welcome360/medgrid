@@ -1,0 +1,118 @@
+MEDGRID Distributed Healthcare Resource Exchange
+ System Architecture Report
+ 
+System Definition
+MEDGRID is a distributed microservice-based healthcare resource exchange and coordination platform that connects
+multiple healthcare-related facilities—including hospitals, pharmacies, blood banks, and medical equipment/PPE
+suppliers—through independent service nodes for resource sharing, geo-location-based discovery, and expiry-aware
+redistribution.
+1. System Goals
+ Enable healthcare facilities to exchange critical medical resources.
+ Support geo-location-based discovery of nearby facilities.
+ Monitor inventory expiry and promote redistribution.
+ Maintain decentralized facility databases using microservices.
+ Coordinate requests between multiple healthcare entities.
+2. Participating Facility Types
+Hospitals – Request emergency supplies, blood, PPE, and equipment.
+Pharmacies – Manage drug inventory and redistribute near-expiry medications.
+Blood Banks – Manage blood stock and respond to blood requests.
+PPE / Equipment Suppliers – Supply medical equipment and PPE to facilities.
+3. High-Level System Architecture
+MEDGRID follows a distributed microservice architecture consisting of:
+ Frontend Web Application
+ API Gateway Layer
+ Central Coordination Service
+ Independent Facility Microservices
+ Separate Local Databases Per Facility
+4. Frontend Application
+The frontend is responsible for:
+ Facility authentication
+ Inventory management
+ Resource request submission
+ Nearby facility discovery
+ Expiry monitoring dashboard
+
+ Redistribution workflow
+5. API Gateway
+The API Gateway acts as the single entry point into the system.
+Responsibilities include:
+ Routing requests to services
+ Authentication validation
+ Security middleware
+ Request aggregation
+6. Coordination Service
+The Coordination Service functions as the central network coordinator.
+Responsibilities:
+ Facility registration and discovery
+ Geo-location matching
+ Resource request coordination
+ Shared inventory metadata management
+7. Facility Microservices
+Each facility maintains its own independent service and database.
+Responsibilities:
+ Local inventory management
+ Expiry monitoring
+ Request handling
+ Resource redistribution
+8. Geolocation Matching
+Facilities are matched using geographic coordinates. The system identifies nearby facilities with available resources
+and ranks them according to proximity and availability.
+9. Expiry Monitoring and Redistribution
+MEDGRID monitors inventory expiry dates locally within each facility.
+Logic:
+If a drug or medical resource is expiring within 60 days, the system flags the item for redistribution.
+Nearby facilities can then request the item before expiry.
+
+10. Database Architecture
+Central Database Stores:
+ Facility profiles
+ Coordinates
+ Shared inventory summaries
+ Resource request metadata
+Local Facility Databases Store:
+ Actual inventory records
+ Expiry dates
+ Redistribution transactions
+ Internal operational data
+11. Technology Stack
+ Frontend: React / Next.js
+ Backend: Node.js + Express
+ Database: PostgreSQL / MySQL
+ Authentication: JWT
+ ORM: Prisma / Sequelize
+ Maps: Leaflet / OpenStreetMap
+12. Required System Diagrams
+ System Context Diagram
+ Use Case Diagram
+ High-Level Architecture Diagram
+ Deployment Diagram
+ Database ER Diagram
+ Sequence Diagrams
+ Activity Diagrams
+13. Project Deliverables
+ Full-stack distributed web application
+ Multiple facility databases
+ Geo-location-based resource discovery
+ Expiry monitoring module
+ Redistribution coordination workflow
+ Academic project documentation
+14. Simplified Architecture Representation
+                 Frontend Web Application
+                           ■
+                           ▼
+                     API Gateway
+                           ■
+        ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+        ▼                  ▼                  ▼
+ Coordination      Hospital Service     Pharmacy Service
+    Service
+        ■                  ■                  ■
+        ▼                  ▼                  ▼
+ Blood Bank          PPE Supplier        Local Databases
+   Service              Service          (Per Facility)
+Conclusion
+MEDGRID provides a scalable and decentralized healthcare coordination ecosystem that supports resource sharing
+among hospitals, pharmacies, blood banks, and medical equipment suppliers. The system combines distributed
+microservice principles, geo-location-based matching, and expiry-aware redistribution into a manageable full-stack
+academic project architecture.

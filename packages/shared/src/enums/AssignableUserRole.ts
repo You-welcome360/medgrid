@@ -1,0 +1,7 @@
+export enum AssignableUserRole {
+  INVENTORY_MANAGER = 'INVENTORY_MANAGER',
+
+  EMCON_COORDINATOR = 'EMCON_COORDINATOR',
+
+  VIEWER = 'VIEWER',
+}
