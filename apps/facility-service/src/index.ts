@@ -1,9 +1,8 @@
+import { env } from './config/env';
 import { createApp } from './app';
-
-const PORT = process.env.PORT ?? 4001;
 
 const app = createApp();
 
-app.listen(PORT, () => {
-  console.log(`Facility Service running on port ${PORT}`);
+app.listen(env.PORT, () => {
+  console.log(`Facility Service running on port ${env.PORT}`);
 });

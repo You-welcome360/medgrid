@@ -11,7 +11,11 @@
     "test": "turbo test",
     "clean": "turbo clean",
     "format": "prettier . --write",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:generate": "pnpm --filter @medgrid/database db:generate",
+    "db:migrate": "pnpm --filter @medgrid/database db:migrate",
+    "db:seed": "pnpm --filter @medgrid/database db:seed",
+    "db:push": "pnpm --filter @medgrid/database exec prisma db push"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
@@ -36,6 +40,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.0.7",
     "prettier": "^3.8.3",
+    "prisma": "^7.8.0",
     "rimraf": "^6.1.3",
     "tsx": "^4.22.4",
     "turbo": "^2.9.16",

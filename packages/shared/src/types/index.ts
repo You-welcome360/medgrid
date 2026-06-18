@@ -3,3 +3,4 @@ export * from './ApiResponse';
 export * from './PaginatedResponse';
 export * from './Inventory';
 export * from './Patient';
+export * from './ServiceHealth';

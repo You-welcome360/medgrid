@@ -1,10 +1,22 @@
 import { Router } from 'express';
 
+import type { ApiResponse } from '@medgrid/shared';
+
 export const healthRouter = Router();
 
+type HealthData = {
+  status: string;
+};
+
 healthRouter.get('/', (_req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    service: 'gateway',
-  });
+  const response: ApiResponse<HealthData> = {
+    success: true,
+    message: 'Facility Service is healthy',
+    data: {
+      status: 'ok',
+    },
+    timestamp: new Date().toISOString(),
+  };
+
+  return res.status(200).json(response);
 });

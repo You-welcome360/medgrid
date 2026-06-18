@@ -1,5 +1,6 @@
 export * from './FacilityType';
 export * from './FacilityStatus';
+export * from './OnboardingRequestStatus';
 export * from './UserRole';
 export * from './UserStatus';
 export * from './RequestStatus';

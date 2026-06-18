@@ -1,9 +1,9 @@
-import { createApp } from './app';
+import { env } from './config/env';
 
-const PORT = process.env.PORT ?? 4002;
+import { createApp } from './app';
 
 const app = createApp();
 
-app.listen(PORT, () => {
-  console.log(`Coordination Service running on port ${PORT}`);
+app.listen(env.PORT, () => {
+  console.log(`Coordination Service running on port ${env.PORT}`);
 });

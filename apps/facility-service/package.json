@@ -8,10 +8,17 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
+    "@medgrid/database": "workspace:*",
+    "@medgrid/shared": "workspace:*",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1"
   },
   "devDependencies": {
     "@medgrid/tsconfig": "workspace:*",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "rimraf": "^6.1.3",
     "typescript": "^6.0.3"

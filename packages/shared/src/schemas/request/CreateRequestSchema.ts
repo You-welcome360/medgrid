@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ResourceType } from '../../enums';
+import { RequestPriority, ResourceType } from '../../enums';
 
 import { VALIDATION } from '../../constants';
 
@@ -22,6 +22,8 @@ export const CreateRequestSchema = z.object({
   itemName: RequestItemNameSchema,
 
   quantity: z.number().positive(),
+
+  priority: z.enum(RequestPriority),
 
   description: RequestDescriptionSchema,
 
