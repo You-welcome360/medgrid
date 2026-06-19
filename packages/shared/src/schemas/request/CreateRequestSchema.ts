@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { RequestPriority, ResourceType } from '../../enums';
+import { InventoryUnit, RequestPriority, ResourceType } from '../../enums';
 
 import { VALIDATION } from '../../constants';
 
@@ -17,11 +17,15 @@ const RequestDescriptionSchema = z
   .max(VALIDATION.DESCRIPTION.MAX_LENGTH);
 
 export const CreateRequestSchema = z.object({
+  supplyingFacilityId: z.string().uuid(),
+
   resourceType: z.enum(ResourceType),
 
   itemName: RequestItemNameSchema,
 
-  quantity: z.number().positive(),
+  quantity: z.number().int().positive(),
+
+  unit: z.enum(InventoryUnit),
 
   priority: z.enum(RequestPriority),
 

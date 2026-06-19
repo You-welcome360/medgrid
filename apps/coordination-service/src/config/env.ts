@@ -18,4 +18,7 @@ export const env = {
     4002,
 
   NODE_ENV: process.env.NODE_ENV || 'development',
+
+  FACILITY_SERVICE_URL:
+    process.env.FACILITY_SERVICE_URL ?? 'http://localhost:4001',
 } as const;

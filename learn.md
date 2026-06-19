@@ -64,3 +64,17 @@ does NOT prevent:
 from reaching your API.
 
 That's Zod's job.
+
+Requesting Facility Coordination-Service Supplying Facility
+│ │ │
+│── POST /requests ──────────►│ │
+│ (PENDING) │ │
+│ │── notify available ────────►│
+│ │ │── POST /requests/:id/accept
+│ │◄────────────────────────────│
+│ │ (ACCEPTED) │
+│ │ │── POST /requests/:id/dispatch
+│ │ (IN_TRANSIT) │
+│ │ │
+│◄── POST /requests/:id/confirm ─────────────────────────────
+│ │ (COMPLETED) │

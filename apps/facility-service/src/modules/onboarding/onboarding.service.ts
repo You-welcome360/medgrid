@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import bcrypt from 'bcrypt';
 
+import { writeAuditLog, AuditAction } from '@medgrid/database';
 import {
   createNotFoundError,
   createConflictError,
@@ -75,6 +76,16 @@ export const submitOnboardingRequest = async (
       adminEmail: data.adminEmail.trim().toLowerCase(),
     });
 
+    await writeAuditLog({
+      action: AuditAction.ONBOARDING_REQUEST_SUBMITTED,
+      entityType: 'FacilityOnboardingRequest',
+      entityId: request.id,
+      newValue: {
+        facilityName: request.facilityName,
+        adminEmail: request.adminEmail,
+      },
+    });
+
     return toOnboardingRequestDTO(request);
   } catch (error) {
     if (
@@ -128,6 +139,14 @@ export const rejectRequest = async (
 
   const updated = await rejectOnboardingRequest(id, reason);
 
+  await writeAuditLog({
+    actorId: undefined,
+    action: AuditAction.ONBOARDING_REQUEST_REJECTED,
+    entityType: 'FacilityOnboardingRequest',
+    entityId: id,
+    newValue: { reason },
+  });
+
   return toOnboardingRequestDTO(updated);
 };
 
@@ -154,6 +173,34 @@ export const approveRequest = async (
     superAdminId,
     passwordHash
   );
+
+  await writeAuditLog({
+    actorId: superAdminId,
+    action: AuditAction.ONBOARDING_REQUEST_APPROVED,
+    entityType: 'FacilityOnboardingRequest',
+    entityId: id,
+    newValue: {
+      facilityId: facility.id,
+      facilityAdminId: admin.id,
+    },
+  });
+
+  await writeAuditLog({
+    actorId: superAdminId,
+    action: AuditAction.FACILITY_CREATED,
+    entityType: 'Facility',
+    entityId: facility.id,
+    newValue: { name: facility.name, type: facility.type },
+  });
+
+  await writeAuditLog({
+    actorId: superAdminId,
+    action: AuditAction.USER_CREATED,
+    entityType: 'User',
+    entityId: admin.id,
+    facilityId: facility.id,
+    newValue: { email: admin.email, role: admin.role },
+  });
 
   return {
     facilityId: facility.id,

@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
 import { authRouter } from './modules/auth';
+import { usersRouter } from './modules/users';
 import { errorMiddleware } from './middlewares/error.middleware';
 
 export const createApp = () => {
@@ -20,6 +21,8 @@ export const createApp = () => {
   app.use(cookieParser());
 
   app.use('/auth', authRouter);
+
+  app.use('/users', usersRouter);
 
   app.use(errorMiddleware);
 

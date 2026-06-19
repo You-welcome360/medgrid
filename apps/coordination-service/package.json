@@ -8,6 +8,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
+    "@medgrid/database": "workspace:*",
     "@medgrid/shared": "workspace:*",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",

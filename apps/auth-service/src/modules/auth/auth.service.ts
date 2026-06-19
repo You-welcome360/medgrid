@@ -10,7 +10,7 @@ import {
   type LoginResponseDTO,
   UserRole,
 } from '@medgrid/shared';
-import { UserStatus } from '@medgrid/database';
+import { UserStatus, writeAuditLog, AuditAction } from '@medgrid/database';
 
 import { env } from '../../config/env';
 import {
@@ -161,8 +161,25 @@ export const login = async (data: LoginDTO): Promise<LoginResult> => {
     await recordFailedLoginFailure(user.id, failedLoginAttempts, lockedUntil);
 
     if (lockedUntil) {
+      await writeAuditLog({
+        actorId: user.id,
+        actorRole: user.role,
+        action: AuditAction.ACCOUNT_LOCKED,
+        entityType: 'User',
+        entityId: user.id,
+        facilityId: user.facilityId ?? undefined,
+        newValue: { reason: 'Max failed login attempts exceeded' },
+      });
+
       throw createAuthenticationError('Account is temporarily locked');
     }
+
+    await writeAuditLog({
+      action: AuditAction.LOGIN_FAILED,
+      entityType: 'User',
+      entityId: user.id,
+      newValue: { attemptedEmail: email },
+    });
 
     throw createAuthenticationError('Invalid email or password');
   }
@@ -189,6 +206,15 @@ export const login = async (data: LoginDTO): Promise<LoginResult> => {
     env.JWT_REFRESH_SECRET,
     env.JWT_REFRESH_EXPIRES_IN
   );
+
+  await writeAuditLog({
+    actorId: user.id,
+    actorRole: user.role,
+    action: AuditAction.LOGIN,
+    entityType: 'User',
+    entityId: user.id,
+    facilityId: user.facilityId ?? undefined,
+  });
 
   return {
     response: {
@@ -271,4 +297,13 @@ export const changePassword = async (
   const newPasswordHash = await bcrypt.hash(data.newPassword, BCRYPT_ROUNDS);
 
   await updatePassword(user.id, newPasswordHash);
+
+  await writeAuditLog({
+    actorId: user.id,
+    actorRole: user.role,
+    action: AuditAction.PASSWORD_CHANGED,
+    entityType: 'User',
+    entityId: user.id,
+    facilityId: user.facilityId ?? undefined,
+  });
 };

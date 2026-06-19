@@ -28,6 +28,24 @@ enum OnboardingRequestStatus {
   REJECTED
 }
 
+enum ResourceType {
+  BLOOD
+  PPE
+  MEDICATION
+  MEDICAL_EQUIPMENT
+}
+
+enum InventoryUnit {
+  UNITS
+  TABLETS
+  CAPSULES
+  VIALS
+  BOXES
+  PACKS
+  PIECES
+  BOTTLES
+}
+
 enum FacilityType {
   HOSPITAL
   PHARMACY
@@ -39,6 +57,80 @@ enum FacilityStatus {
   ACTIVE
   INACTIVE
   SUSPENDED
+}
+
+enum InventoryStatus {
+  AVAILABLE
+  RESERVED
+  UNAVAILABLE
+  MAINTENANCE
+  EXPIRED
+  DEPLETED
+}
+
+enum StockMovementType {
+  RESTOCK
+  CONSUMPTION
+  ADJUSTMENT
+  EXPIRED_REMOVAL
+  DAMAGE
+  TRANSFER_OUT
+  TRANSFER_IN
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  IN_TRANSIT
+  COMPLETED
+  CANCELLED
+  REJECTED
+  FAILED
+}
+
+enum RequestPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AuditAction {
+  // Auth
+  LOGIN
+  LOGOUT
+  LOGIN_FAILED
+  PASSWORD_CHANGED
+  ACCOUNT_LOCKED
+
+  // Onboarding
+  ONBOARDING_REQUEST_SUBMITTED
+  ONBOARDING_REQUEST_APPROVED
+  ONBOARDING_REQUEST_REJECTED
+
+  // Facility
+  FACILITY_CREATED
+  FACILITY_UPDATED
+  FACILITY_SUSPENDED
+
+  // User Management
+  USER_CREATED
+  USER_SUSPENDED
+  USER_DEACTIVATED
+  USER_ROLE_CHANGED
+
+  // Inventory
+  INVENTORY_CREATED
+  INVENTORY_UPDATED
+  INVENTORY_ADJUSTED
+  INVENTORY_DELETED
+
+  // Resource Requests
+  REQUEST_CREATED
+  REQUEST_ACCEPTED
+  REQUEST_REJECTED
+  REQUEST_COMPLETED
+  REQUEST_CANCELLED
 }
 
 model User {
@@ -152,7 +244,10 @@ model Facility {
   // Relationships
   // ===========================================================================
 
-  users User[]
+  users       User[]
+  inventories Inventory[]
+  outgoingRequests ResourceRequest[] @relation("RequestingFacility")
+  incomingRequests ResourceRequest[] @relation("SupplyingFacility")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -223,4 +318,337 @@ model FacilityOnboardingRequest {
 
   @@index([status])
   @@index([facilityType])
+}
+
+model AuditLog {
+  id String @id @default(uuid())
+
+  // ===========================================================================
+  // Actor
+  // ===========================================================================
+
+  /// Stored as plain string — no FK so logs survive user deletion
+  actorId   String?
+
+  /// Snapshot of the actor's role at the time of the action
+  actorRole String?
+
+  // ===========================================================================
+  // Action
+  // ===========================================================================
+
+  action AuditAction
+
+  // ===========================================================================
+  // Target Entity
+  // ===========================================================================
+
+  entityType String
+  entityId   String
+
+  // ===========================================================================
+  // Context
+  // ===========================================================================
+
+  /// Null for SUPER_ADMIN and system-level actions
+  facilityId String?
+
+  // ===========================================================================
+  // Change Snapshot (minimal — only populated where meaningful)
+  // ===========================================================================
+
+  previousValue Json?
+  newValue      Json?
+
+  // ===========================================================================
+  // Request Metadata
+  // ===========================================================================
+
+  ipAddress String?
+  userAgent String?
+
+  // ===========================================================================
+  // Timestamp
+  // ===========================================================================
+
+  createdAt DateTime @default(now())
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@index([facilityId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model Inventory {
+  id String @id @default(uuid())
+
+  // ===========================================================================
+  // Ownership
+  // ===========================================================================
+
+  facilityId String
+
+  // ===========================================================================
+  // Resource
+  // ===========================================================================
+
+  resourceType ResourceType
+
+  itemName String @db.VarChar(255)
+
+  unit InventoryUnit
+
+  status InventoryStatus @default(AVAILABLE)
+
+  /// Optional — when set, a LowStockAlert fires when derived quantity falls below this
+  lowStockThreshold Int?
+
+  // ===========================================================================
+  // Type-specific Metadata (discriminated by resourceType)
+  // ===========================================================================
+
+  metadata Json
+
+  // ===========================================================================
+  // Audit Metadata
+  // ===========================================================================
+
+  createdById String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  // ===========================================================================
+  // Relationships
+  // ===========================================================================
+
+  facility       Facility        @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  stockMovements StockMovement[]
+  lowStockAlerts LowStockAlert[]
+
+  @@index([facilityId])
+  @@index([resourceType])
+  @@index([status])
+  @@index([facilityId, resourceType])
+  @@index([facilityId, status])
+}
+
+model StockMovement {
+  id String @id @default(uuid())
+
+  // ===========================================================================
+  // Target
+  // ===========================================================================
+
+  inventoryId String
+
+  /// Denormalized for efficient facility-scoped queries
+  facilityId String
+
+  // ===========================================================================
+  // Movement
+  // ===========================================================================
+
+  /// Signed integer — positive = stock in, negative = stock out
+  quantity Int
+
+  movementType StockMovementType
+
+  reason String? @db.VarChar(500)
+
+  // ===========================================================================
+  // Actor
+  // ===========================================================================
+
+  performedById String
+
+  /// Optional — links to a resource request when movement is a transfer
+  referenceId String?
+
+  // ===========================================================================
+  // Timestamp (immutable — no updatedAt)
+  // ===========================================================================
+
+  createdAt DateTime @default(now())
+
+  // ===========================================================================
+  // Relationships
+  // ===========================================================================
+
+  inventory Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  @@index([inventoryId])
+  @@index([facilityId])
+  @@index([movementType])
+  @@index([performedById])
+  @@index([inventoryId, createdAt])
+}
+
+model LowStockAlert {
+  id String @id @default(uuid())
+
+  // ===========================================================================
+  // Target
+  // ===========================================================================
+
+  inventoryId String
+
+  /// Denormalized for efficient facility-scoped queries
+  facilityId String
+
+  // ===========================================================================
+  // Alert Snapshot
+  // ===========================================================================
+
+  /// Threshold value at the time the alert was triggered
+  thresholdAtTime Int
+
+  /// Quantity that triggered the alert
+  quantityAtTime Int
+
+  // ===========================================================================
+  // Resolution
+  // ===========================================================================
+
+  /// Null = active alert, set = resolved
+  resolvedAt DateTime?
+
+  // ===========================================================================
+  // Timestamps (immutable — no updatedAt)
+  // ===========================================================================
+
+  createdAt DateTime @default(now())
+
+  // ===========================================================================
+  // Relationships
+  // ===========================================================================
+
+  inventory Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  @@index([inventoryId])
+  @@index([facilityId])
+  @@index([facilityId, resolvedAt])
+  @@index([inventoryId, resolvedAt])
+}
+
+model ResourceRequest {
+  id String @id @default(uuid())
+
+  // ===========================================================================
+  // Parties
+  // ===========================================================================
+
+  requestingFacilityId String
+
+  /// Set when a supplier accepts the request
+  supplyingFacilityId String?
+
+  /// COORDINATION_MANAGER who created the request
+  requestedById String
+
+  /// User who accepted / rejected the request
+  handledById String?
+
+  // ===========================================================================
+  // Resource
+  // ===========================================================================
+
+  resourceType ResourceType
+
+  itemName String @db.VarChar(255)
+
+  quantity Int
+
+  unit InventoryUnit
+
+  // ===========================================================================
+  // Request Details
+  // ===========================================================================
+
+  priority RequestPriority
+
+  status RequestStatus @default(PENDING)
+
+  description String @db.VarChar(1000)
+
+  /// Optional patient context (stored as JSON snapshot)
+  patient Json?
+
+  // ===========================================================================
+  // Resolution
+  // ===========================================================================
+
+  rejectionReason   String? @db.VarChar(500)
+
+  cancellationReason String? @db.VarChar(500)
+
+  // ===========================================================================
+  // Timeline
+  // ===========================================================================
+
+  requestedAt  DateTime  @default(now())
+  acceptedAt   DateTime?
+  dispatchedAt DateTime?
+  completedAt  DateTime?
+
+  // ===========================================================================
+  // Audit Metadata
+  // ===========================================================================
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ===========================================================================
+  // Relationships
+  // ===========================================================================
+
+  requestingFacility Facility  @relation("RequestingFacility", fields: [requestingFacilityId], references: [id])
+  supplyingFacility  Facility? @relation("SupplyingFacility",  fields: [supplyingFacilityId],  references: [id])
+
+  @@index([requestingFacilityId])
+  @@index([supplyingFacilityId])
+  @@index([status])
+  @@index([priority])
+  @@index([resourceType])
+  @@index([requestedById])
+  @@index([requestingFacilityId, status])
+  @@index([supplyingFacilityId, status])
+}
+
+model UserInvitation {
+  id String @id @default(uuid())
+
+  // ===========================================================================
+  // Target
+  // ===========================================================================
+
+  /// The pending user this invitation is for
+  userId String @unique
+
+  facilityId String
+
+  // ===========================================================================
+  // Token
+  // ===========================================================================
+
+  /// bcrypt hash of the raw invitation token — never store raw
+  tokenHash String
+
+  expiresAt DateTime
+
+  /// Set when the invitation is accepted
+  usedAt DateTime?
+
+  // ===========================================================================
+  // Audit
+  // ===========================================================================
+
+  createdById String
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([facilityId])
 }

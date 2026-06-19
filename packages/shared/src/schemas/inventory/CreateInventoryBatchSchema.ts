@@ -21,8 +21,6 @@ const BloodInventorySchema = z.object({
 
   itemName: InventoryItemNameSchema,
 
-  quantity: z.number().positive(),
-
   unit: z.enum(InventoryUnit),
 
   metadata: BloodMetadataSchema,
@@ -32,8 +30,6 @@ const MedicationInventorySchema = z.object({
   resourceType: z.literal(ResourceType.MEDICATION),
 
   itemName: InventoryItemNameSchema,
-
-  quantity: z.number().positive(),
 
   unit: z.enum(InventoryUnit),
 
@@ -45,8 +41,6 @@ const PPEInventorySchema = z.object({
 
   itemName: InventoryItemNameSchema,
 
-  quantity: z.number().positive(),
-
   unit: z.enum(InventoryUnit),
 
   metadata: PPEMetadataSchema,
@@ -56,8 +50,6 @@ const EquipmentInventorySchema = z.object({
   resourceType: z.literal(ResourceType.MEDICAL_EQUIPMENT),
 
   itemName: InventoryItemNameSchema,
-
-  quantity: z.number().positive(),
 
   unit: z.enum(InventoryUnit),
 

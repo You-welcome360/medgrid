@@ -8,6 +8,7 @@ import {
   type ApiResponse,
   type LoginResponseDTO,
 } from '@medgrid/shared';
+import { writeAuditLog, AuditAction } from '@medgrid/database';
 
 import { env } from '../../config/env';
 import {
@@ -83,16 +84,44 @@ export const refreshController = async (
   }
 };
 
-export const logoutController = (_req: Request, res: Response) => {
-  res.clearCookie(REFRESH_TOKEN_COOKIE, refreshCookieOptions);
+export const logoutController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // Best-effort: get the user from the refresh token to record who logged out.
+    // If the token is already invalid we still clear the cookie and succeed.
+    try {
+      const user = await getCurrentUser(
+        req.headers.authorization,
+        req.cookies?.[REFRESH_TOKEN_COOKIE]
+      );
 
-  const response: ApiResponse<null> = {
-    success: true,
-    message: 'Logout successful',
-    timestamp: new Date().toISOString(),
-  };
+      await writeAuditLog({
+        actorId: user.id,
+        actorRole: user.role,
+        action: AuditAction.LOGOUT,
+        entityType: 'User',
+        entityId: user.id,
+        facilityId: user.facilityId ?? undefined,
+      });
+    } catch {
+      // Swallow — token may be expired, logout should still succeed
+    }
 
-  return res.status(200).json(response);
+    res.clearCookie(REFRESH_TOKEN_COOKIE, refreshCookieOptions);
+
+    const response: ApiResponse<null> = {
+      success: true,
+      message: 'Logout successful',
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
 };
 
 export const meController = async (

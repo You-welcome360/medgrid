@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 
 import { healthRouter } from './routes/health.route';
+import { internalRouter } from './routes/internal.route';
 import { facilityRouter } from './modules/facilities';
 import { inventoryRouter } from './modules/inventory';
 import { onboardingRouter } from './modules/onboarding';
@@ -18,6 +19,9 @@ export const createApp = () => {
   app.use(express.json());
 
   app.use('/health', healthRouter);
+
+  // Internal service-to-service routes — not exposed via the gateway
+  app.use('/internal', internalRouter);
 
   app.use('/facilities', facilityRouter);
 

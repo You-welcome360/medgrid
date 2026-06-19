@@ -7,6 +7,7 @@ import { healthRouter } from './modules/health';
 import { inventoryRouter } from './modules/inventory';
 import { requestRouter } from './modules/request';
 import { onboardingRouter } from './modules/onboarding';
+import { usersRouter } from './modules/users';
 import { errorMiddleware } from './middlewares/error.middleware';
 import { notFoundMiddleware } from './middlewares/not-found.middleware';
 import { requestLoggerMiddleware } from './middlewares/request-logger.middleware';
@@ -39,6 +40,8 @@ export const createApp = () => {
   app.use('/api/v1/requests', requestRouter);
 
   app.use('/api/v1/onboarding-requests', onboardingRouter);
+
+  app.use('/api/v1/users', usersRouter);
 
   app.use(notFoundMiddleware);
 

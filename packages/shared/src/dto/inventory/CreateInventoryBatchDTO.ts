@@ -7,8 +7,6 @@ export interface CreateInventoryBatchDTO {
 
   itemName: string;
 
-  quantity: number;
-
   unit: InventoryUnit;
 
   metadata: InventoryMetadata;
