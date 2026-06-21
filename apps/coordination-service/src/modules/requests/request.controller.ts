@@ -131,12 +131,14 @@ export const acceptRequestController = async (
   try {
     const id = req.params['id'] as string;
 
-    const request = await accept(id, getFacilityId(req), getUserId(req));
+    const result = await accept(id, getFacilityId(req), getUserId(req));
 
     const response: ApiResponse<ResourceRequestDTO> = {
       success: true,
-      message: 'Request accepted',
-      data: request,
+      message: result.reservedThresholdWarning
+        ? `Request accepted. ⚠️ ${result.reservedThresholdWarning}`
+        : 'Request accepted',
+      data: result,
       timestamp: new Date().toISOString(),
     };
 

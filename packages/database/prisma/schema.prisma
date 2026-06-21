@@ -131,6 +131,8 @@ enum AuditAction {
   REQUEST_REJECTED
   REQUEST_COMPLETED
   REQUEST_CANCELLED
+  REQUEST_DISPATCHED
+  REQUEST_FAILED
 }
 
 model User {
@@ -403,6 +405,9 @@ model Inventory {
 
   /// Optional — when set, a LowStockAlert fires when derived quantity falls below this
   lowStockThreshold Int?
+
+  /// Optional — when set, a warning fires if a request would bring stock below this level
+  reservedThreshold Int?
 
   // ===========================================================================
   // Type-specific Metadata (discriminated by resourceType)

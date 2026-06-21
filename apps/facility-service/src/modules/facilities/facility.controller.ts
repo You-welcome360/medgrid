@@ -6,7 +6,11 @@ import {
   type ApiResponse,
 } from '@medgrid/shared';
 
-import { createFacility } from './facility.service';
+import {
+  createFacility,
+  getAllFacilities,
+  getFacilityById,
+} from './facility.service';
 
 export const createFacilityController = async (
   req: Request,
@@ -17,8 +21,6 @@ export const createFacilityController = async (
     const result = CreateFacilitySchema.safeParse(req.body);
 
     if (!result.success) {
-      console.log(result.error.flatten());
-
       return next(createValidationError());
     }
 
@@ -32,6 +34,50 @@ export const createFacilityController = async (
     };
 
     return res.status(201).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getAllFacilitiesController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const facilities = await getAllFacilities();
+
+    const response: ApiResponse<typeof facilities> = {
+      success: true,
+      message: 'Facilities retrieved successfully',
+      data: facilities,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getFacilityByIdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params['id'] as string;
+
+    const facility = await getFacilityById(id);
+
+    const response: ApiResponse<typeof facility> = {
+      success: true,
+      message: 'Facility retrieved successfully',
+      data: facility,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(response);
   } catch (error) {
     return next(error);
   }

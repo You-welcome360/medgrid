@@ -49,4 +49,7 @@ export interface ResourceRequestDTO {
   createdAt: string;
 
   updatedAt: string;
+
+  /// Present only when accepting a request would breach the supplier's reserved threshold
+  reservedThresholdWarning?: string | null;
 }

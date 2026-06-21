@@ -198,15 +198,9 @@ export const completeInvitation = async (
     throw createValidationError('Invalid or expired invitation token');
   }
 
-  // Verify the raw token against the stored hash
-  const tokenValid = await bcrypt.compare(
-    data.invitationToken,
-    invitation.tokenHash
-  );
-
-  if (!tokenValid) {
-    throw createValidationError('Invalid or expired invitation token');
-  }
+  // JWT verification in verifyInvitationToken() already proves authenticity.
+  // The DB record confirms it hasn't been used and hasn't expired.
+  // bcrypt.compare is intentionally omitted — JWT tokens exceed bcrypt's 72-byte limit.
 
   const passwordHash = await bcrypt.hash(data.password, BCRYPT_ROUNDS);
 

@@ -1,6 +1,8 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
 export function AuthLayout() {
+  const location = useLocation();
+  const isRegister = location.pathname === '/register';
   return (
     <div className="flex min-h-screen">
       {/* Left panel — branding */}
@@ -43,7 +45,9 @@ export function AuthLayout() {
 
       {/* Right panel — form */}
       <div className="flex flex-1 items-center justify-center p-8">
-        <div className="w-full max-w-md">
+        <div
+          className={`w-full transition-all duration-300 ${isRegister ? 'max-w-3xl' : 'max-w-md'}`}
+        >
           {/* Mobile logo */}
           <div className="mb-8 flex items-center gap-2 lg:hidden">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-950">

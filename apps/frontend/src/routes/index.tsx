@@ -9,13 +9,18 @@ import { lazy, Suspense } from 'react';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 
 const LoginPage = lazy(() => import('@/pages/auth/login'));
+const RegisterPage = lazy(() => import('@/pages/auth/register'));
 const ChangePasswordPage = lazy(() => import('@/pages/auth/change-password'));
+const CompleteInvitationPage = lazy(
+  () => import('@/pages/auth/complete-invitation')
+);
 
 // Facility / operational pages
 const DashboardPage = lazy(() => import('@/pages/dashboard'));
 const RequestsPage = lazy(() => import('@/pages/requests'));
 const InventoryPage = lazy(() => import('@/pages/inventory'));
 const FacilitiesPage = lazy(() => import('@/pages/facilities'));
+const FacilityUsersPage = lazy(() => import('@/pages/users'));
 const NotificationsPage = lazy(() => import('@/pages/notifications'));
 const ReportsPage = lazy(() => import('@/pages/reports'));
 const SettingsPage = lazy(() => import('@/pages/settings'));
@@ -48,6 +53,22 @@ function AppRoutes() {
             element={
               <SuspenseWrapper>
                 <LoginPage />
+              </SuspenseWrapper>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <SuspenseWrapper>
+                <RegisterPage />
+              </SuspenseWrapper>
+            }
+          />
+          <Route
+            path="/invite/complete"
+            element={
+              <SuspenseWrapper>
+                <CompleteInvitationPage />
               </SuspenseWrapper>
             }
           />
@@ -125,6 +146,17 @@ function AppRoutes() {
               <SuspenseWrapper>
                 <SettingsPage />
               </SuspenseWrapper>
+            }
+          />
+          {/* FACILITY_ADMIN only */}
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute allowedRoles={['FACILITY_ADMIN']}>
+                <SuspenseWrapper>
+                  <FacilityUsersPage />
+                </SuspenseWrapper>
+              </ProtectedRoute>
             }
           />
         </Route>

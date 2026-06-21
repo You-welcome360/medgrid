@@ -1,0 +1,139 @@
+{
+  "files": {
+    "apps/coordination-service/dist/clients": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/coordination-service/dist/modules/requests/request.service.js": {
+      "size": 12924,
+      "mtime_nanos": 1782011322707562000,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/coordination-service/dist/index.js": {
+      "size": 298,
+      "mtime_nanos": 1782011322729161500,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/coordination-service/dist/modules/requests/request.routes.js": {
+      "size": 1030,
+      "mtime_nanos": 1782011322718567300,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/coordination-service/dist/routes/health.route.js": {
+      "size": 491,
+      "mtime_nanos": 1782011322673015200,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/coordination-service/dist/routes": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/coordination-service/dist/modules/requests/request.repository.js": {
+      "size": 4432,
+      "mtime_nanos": 1782011322682563100,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/coordination-service/dist/modules/requests/index.js": {
+      "size": 293,
+      "mtime_nanos": 1782011322721565400,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/coordination-service/dist/middlewares": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/coordination-service/dist/modules/requests": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/coordination-service/dist/app.js": {
+      "size": 920,
+      "mtime_nanos": 1782011322727163200,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/coordination-service/dist": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/coordination-service/dist/config/env.js": {
+      "size": 842,
+      "mtime_nanos": 1782011322687563100,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/coordination-service/dist/modules": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/coordination-service/dist/config": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/coordination-service/.turbo/turbo-build.log": {
+      "size": 108,
+      "mtime_nanos": 1782011322797728700,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/coordination-service/dist/modules/requests/request.controller.js": {
+      "size": 7122,
+      "mtime_nanos": 1782011322715565300,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/coordination-service/dist/middlewares/error.middleware.js": {
+      "size": 777,
+      "mtime_nanos": 1782011322724643100,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/coordination-service/dist/clients/facility.client.js": {
+      "size": 2533,
+      "mtime_nanos": 1782011322692565200,
+      "mode": 420,
+      "is_dir": false
+    }
+  },
+  "order": [
+    "apps/coordination-service/.turbo/turbo-build.log",
+    "apps/coordination-service/dist",
+    "apps/coordination-service/dist/app.js",
+    "apps/coordination-service/dist/clients",
+    "apps/coordination-service/dist/clients/facility.client.js",
+    "apps/coordination-service/dist/config",
+    "apps/coordination-service/dist/config/env.js",
+    "apps/coordination-service/dist/index.js",
+    "apps/coordination-service/dist/middlewares",
+    "apps/coordination-service/dist/middlewares/error.middleware.js",
+    "apps/coordination-service/dist/modules",
+    "apps/coordination-service/dist/modules/requests",
+    "apps/coordination-service/dist/modules/requests/index.js",
+    "apps/coordination-service/dist/modules/requests/request.controller.js",
+    "apps/coordination-service/dist/modules/requests/request.repository.js",
+    "apps/coordination-service/dist/modules/requests/request.routes.js",
+    "apps/coordination-service/dist/modules/requests/request.service.js",
+    "apps/coordination-service/dist/routes",
+    "apps/coordination-service/dist/routes/health.route.js"
+  ]
+}

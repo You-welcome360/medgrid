@@ -28,7 +28,8 @@ const schema = z
       .min(8, 'At least 8 characters')
       .regex(/[A-Z]/, 'Must contain an uppercase letter')
       .regex(/[a-z]/, 'Must contain a lowercase letter')
-      .regex(/\d/, 'Must contain a number'),
+      .regex(/\d/, 'Must contain a number')
+      .regex(/[@$!%*?&]/, 'Must contain a special character (@$!%*?&)'),
     confirmPassword: z.string().min(1, 'Please confirm your password'),
   })
   .refine((d) => d.newPassword === d.confirmPassword, {

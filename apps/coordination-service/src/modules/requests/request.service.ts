@@ -27,6 +27,7 @@ import {
 } from './request.repository';
 import {
   lookupInventoryItem,
+  createInventoryForTransfer,
   recordInternalStockMovement,
 } from '../../clients/facility.client';
 
@@ -183,7 +184,7 @@ export const accept = async (
   id: string,
   supplyingFacilityId: string,
   handledById: string
-): Promise<ResourceRequestDTO> => {
+): Promise<ResourceRequestDTO & { reservedThresholdWarning?: string }> => {
   const request = await findRequestById(id);
 
   assertStatus(
@@ -193,6 +194,29 @@ export const accept = async (
   );
   assertSupplier(request, supplyingFacilityId);
 
+  // Check reserved threshold — soft fail (warn, don't block)
+  let reservedThresholdWarning: string | undefined;
+
+  const supplierItem = await lookupInventoryItem(
+    supplyingFacilityId,
+    request!.itemName,
+    request!.resourceType
+  );
+
+  if (supplierItem) {
+    const stockAfterFulfillment = supplierItem.currentStock - request!.quantity;
+
+    if (
+      supplierItem.reservedThreshold !== null &&
+      stockAfterFulfillment < supplierItem.reservedThreshold
+    ) {
+      reservedThresholdWarning =
+        `Warning: Fulfilling this request (${request!.quantity} ${request!.unit.toLowerCase()}) ` +
+        `would reduce your stock of "${supplierItem.itemName}" to ${stockAfterFulfillment} ` +
+        `units, below your reserved threshold of ${supplierItem.reservedThreshold}.`;
+    }
+  }
+
   const updated = await acceptRequest(id, handledById);
 
   await writeAuditLog({
@@ -201,9 +225,15 @@ export const accept = async (
     entityType: 'ResourceRequest',
     entityId: id,
     facilityId: supplyingFacilityId,
+    newValue: reservedThresholdWarning
+      ? { reservedThresholdWarning }
+      : undefined,
   });
 
-  return toResourceRequestDTO(updated);
+  return {
+    ...toResourceRequestDTO(updated),
+    reservedThresholdWarning,
+  };
 };
 
 export const reject = async (
@@ -216,8 +246,8 @@ export const reject = async (
 
   assertStatus(
     request,
-    [RequestStatus.PENDING],
-    'Only pending requests can be rejected'
+    [RequestStatus.PENDING, RequestStatus.ACCEPTED],
+    'Only pending or accepted requests can be rejected'
   );
   assertSupplier(request, supplyingFacilityId);
 
@@ -253,7 +283,7 @@ export const dispatch = async (
 
   await writeAuditLog({
     actorId: handledById,
-    action: AuditAction.REQUEST_ACCEPTED,
+    action: AuditAction.REQUEST_DISPATCHED,
     entityType: 'ResourceRequest',
     entityId: id,
     facilityId: supplyingFacilityId,
@@ -288,8 +318,8 @@ export const confirmReceipt = async (
     newValue: { completedAt: updated.completedAt?.toISOString() },
   });
 
-  // Fire stock movements best-effort — do not block completion if inventory
-  // items don't exist (e.g. supplier hasn't registered the item yet)
+  // Fire stock movements — supplier TRANSFER_OUT, requester TRANSFER_IN
+  // Auto-create requester item from supplier metadata if it doesn't exist
   if (request!.supplyingFacilityId) {
     const supplierItem = await lookupInventoryItem(
       request!.supplyingFacilityId,
@@ -301,31 +331,79 @@ export const confirmReceipt = async (
       await recordInternalStockMovement(
         supplierItem.inventoryId,
         request!.supplyingFacilityId,
-        -request!.quantity, // negative = stock out
+        -request!.quantity,
         'TRANSFER_OUT',
         `Fulfilled resource request ${id}`,
         request!.handledById ?? confirmedById,
         id
       );
+
+      // Ensure requester has the item — create from supplier metadata if missing
+      let requesterItem = await lookupInventoryItem(
+        requestingFacilityId,
+        request!.itemName,
+        request!.resourceType
+      );
+
+      if (!requesterItem) {
+        const created = await createInventoryForTransfer(
+          requestingFacilityId,
+          request!.itemName,
+          request!.resourceType,
+          supplierItem.unit,
+          supplierItem.metadata,
+          confirmedById
+        );
+
+        if (created) {
+          requesterItem = {
+            inventoryId: created.inventoryId,
+            facilityId: requestingFacilityId,
+            itemName: request!.itemName,
+            resourceType: request!.resourceType,
+            unit: supplierItem.unit,
+            metadata: supplierItem.metadata,
+            currentStock: 0,
+            reservedThreshold: null,
+          };
+        }
+      }
+
+      if (requesterItem) {
+        await recordInternalStockMovement(
+          requesterItem.inventoryId,
+          requestingFacilityId,
+          request!.quantity,
+          'TRANSFER_IN',
+          `Received resource request ${id}`,
+          confirmedById,
+          id
+        );
+      }
+    } else {
+      // Supplier item not found — still try to update requester if they have it
+      const requesterItem = await lookupInventoryItem(
+        requestingFacilityId,
+        request!.itemName,
+        request!.resourceType
+      );
+
+      if (requesterItem) {
+        await recordInternalStockMovement(
+          requesterItem.inventoryId,
+          requestingFacilityId,
+          request!.quantity,
+          'TRANSFER_IN',
+          `Received resource request ${id}`,
+          confirmedById,
+          id
+        );
+      }
+
+      console.warn(
+        `[coordination] confirmReceipt: supplier item "${request!.itemName}" not found for facility ${request!.supplyingFacilityId}. Supplier stock not reduced.`
+      );
     }
-  }
-
-  const requesterItem = await lookupInventoryItem(
-    requestingFacilityId,
-    request!.itemName,
-    request!.resourceType
-  );
-
-  if (requesterItem) {
-    await recordInternalStockMovement(
-      requesterItem.inventoryId,
-      requestingFacilityId,
-      request!.quantity, // positive = stock in
-      'TRANSFER_IN',
-      `Received resource request ${id}`,
-      confirmedById,
-      id
-    );
   }
 
   return toResourceRequestDTO(updated);
@@ -378,7 +456,7 @@ export const markFailed = async (
 
   await writeAuditLog({
     actorId: handledById,
-    action: AuditAction.REQUEST_CANCELLED,
+    action: AuditAction.REQUEST_FAILED,
     entityType: 'ResourceRequest',
     entityId: id,
     facilityId: supplyingFacilityId,

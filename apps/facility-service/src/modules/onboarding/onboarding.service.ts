@@ -125,6 +125,7 @@ export const getOnboardingRequestById = async (
 
 export const rejectRequest = async (
   id: string,
+  superAdminId: string,
   reason: string
 ): Promise<OnboardingRequestDTO> => {
   const request = await findOnboardingRequestById(id);
@@ -140,7 +141,7 @@ export const rejectRequest = async (
   const updated = await rejectOnboardingRequest(id, reason);
 
   await writeAuditLog({
-    actorId: undefined,
+    actorId: superAdminId,
     action: AuditAction.ONBOARDING_REQUEST_REJECTED,
     entityType: 'FacilityOnboardingRequest',
     entityId: id,

@@ -12,10 +12,12 @@ import {
 import {
   createInventoryInFacilityService,
   getInventoryFromFacilityService,
+  getAvailableInventoryFromFacilityService,
   getInventoryItemFromFacilityService,
   updateInventoryStatusInFacilityService,
   deleteInventoryInFacilityService,
   setThresholdInFacilityService,
+  setReservedThresholdInFacilityService,
   createStockMovementInFacilityService,
   getStockMovementsFromFacilityService,
   getActiveAlertsFromFacilityService,
@@ -256,6 +258,55 @@ export const getAlertsByInventoryController = async (
 
     const response = await getAlertsByInventoryFromFacilityService(
       id,
+      getInventoryHeaders(req, res)
+    );
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const setReservedThresholdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params['id'] as string;
+
+    const result = SetThresholdSchema.safeParse(req.body);
+
+    if (!result.success) {
+      return next(createValidationError());
+    }
+
+    const response = await setReservedThresholdInFacilityService(
+      id,
+      result.data,
+      getInventoryHeaders(req, res)
+    );
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getAvailableInventoryController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { facilityId, resourceType } = req.query as {
+      facilityId: string;
+      resourceType?: string;
+    };
+
+    const response = await getAvailableInventoryFromFacilityService(
+      facilityId,
+      resourceType,
       getInventoryHeaders(req, res)
     );
 

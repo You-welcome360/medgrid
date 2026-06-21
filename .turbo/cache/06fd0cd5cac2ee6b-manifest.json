@@ -1,0 +1,153 @@
+{
+  "files": {
+    "apps/auth-service/dist/modules/users/users.routes.js": {
+      "size": 877,
+      "mtime_nanos": 1781843597584760200,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/auth-service/dist/modules": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/auth-service/dist/modules/auth/auth.controller.js": {
+      "size": 4324,
+      "mtime_nanos": 1781843597523715600,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/auth-service/dist/modules/users/users.service.js": {
+      "size": 10034,
+      "mtime_nanos": 1781843597566760700,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/auth-service/dist": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/auth-service/dist/config/env.js": {
+      "size": 1468,
+      "mtime_nanos": 1781843597371247300,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/auth-service/dist/modules/auth": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/auth-service/dist/modules/users/users.repository.js": {
+      "size": 3484,
+      "mtime_nanos": 1781843597547760800,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/auth-service/dist/index.js": {
+      "size": 290,
+      "mtime_nanos": 1781843597598762000,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/auth-service/dist/middlewares/error.middleware.js": {
+      "size": 777,
+      "mtime_nanos": 1781843597592761100,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/auth-service/dist/modules/auth/auth.repository.js": {
+      "size": 1650,
+      "mtime_nanos": 1781843597443013200,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/auth-service/dist/modules/auth/auth.route.js": {
+      "size": 615,
+      "mtime_nanos": 1781843597527723900,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/auth-service/dist/config": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/auth-service/dist/modules/users": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/auth-service/dist/modules/users/index.js": {
+      "size": 281,
+      "mtime_nanos": 1781843597586763000,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/auth-service/.turbo/turbo-build.log": {
+      "size": 92,
+      "mtime_nanos": 1781843597763309000,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/auth-service/dist/app.js": {
+      "size": 1018,
+      "mtime_nanos": 1781843597596762800,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/auth-service/dist/modules/auth/auth.service.js": {
+      "size": 7796,
+      "mtime_nanos": 1781843597498935400,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/auth-service/dist/modules/users/users.controller.js": {
+      "size": 5183,
+      "mtime_nanos": 1781843597580759700,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/auth-service/dist/modules/auth/index.js": {
+      "size": 272,
+      "mtime_nanos": 1781843597532717800,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/auth-service/dist/middlewares": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    }
+  },
+  "order": [
+    "apps/auth-service/.turbo/turbo-build.log",
+    "apps/auth-service/dist",
+    "apps/auth-service/dist/app.js",
+    "apps/auth-service/dist/config",
+    "apps/auth-service/dist/config/env.js",
+    "apps/auth-service/dist/index.js",
+    "apps/auth-service/dist/middlewares",
+    "apps/auth-service/dist/middlewares/error.middleware.js",
+    "apps/auth-service/dist/modules",
+    "apps/auth-service/dist/modules/auth",
+    "apps/auth-service/dist/modules/auth/auth.controller.js",
+    "apps/auth-service/dist/modules/auth/auth.repository.js",
+    "apps/auth-service/dist/modules/auth/auth.route.js",
+    "apps/auth-service/dist/modules/auth/auth.service.js",
+    "apps/auth-service/dist/modules/auth/index.js",
+    "apps/auth-service/dist/modules/users",
+    "apps/auth-service/dist/modules/users/index.js",
+    "apps/auth-service/dist/modules/users/users.controller.js",
+    "apps/auth-service/dist/modules/users/users.repository.js",
+    "apps/auth-service/dist/modules/users/users.routes.js",
+    "apps/auth-service/dist/modules/users/users.service.js"
+  ]
+}

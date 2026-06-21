@@ -106,6 +106,7 @@ export const rejectOnboardingRequestController = async (
 ) => {
   try {
     const id = req.params['id'] as string;
+    const adminId = req.headers['x-admin-id'] as string;
 
     const result = RejectOnboardingRequestSchema.safeParse(req.body);
 
@@ -113,7 +114,7 @@ export const rejectOnboardingRequestController = async (
       return next(createValidationError());
     }
 
-    const request = await rejectRequest(id, result.data.reason);
+    const request = await rejectRequest(id, adminId, result.data.reason);
 
     const response: ApiResponse<OnboardingRequestDTO> = {
       success: true,

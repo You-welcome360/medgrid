@@ -1,0 +1,440 @@
+{
+  "files": {
+    "apps/gateway/dist/modules/inventory/inventory.route.js": {
+      "size": 1837,
+      "mtime_nanos": 1781843595776725800,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/gateway/dist/clients/facility": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/gateway/dist/index.js": {
+      "size": 285,
+      "mtime_nanos": 1781843595913799500,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/auth/auth.controller.js": {
+      "size": 2677,
+      "mtime_nanos": 1781843595672725600,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/system": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/gateway/dist/middlewares/error.middleware.js": {
+      "size": 777,
+      "mtime_nanos": 1781843595872263800,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/clients/coordination": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/gateway/dist/modules/facility/facility.route.js": {
+      "size": 344,
+      "mtime_nanos": 1781843595709725500,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/health": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/gateway/dist/modules/users/users.controller.js": {
+      "size": 4089,
+      "mtime_nanos": 1781843595856263100,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/clients/facility/inventory.client.js": {
+      "size": 5733,
+      "mtime_nanos": 1781843595742725800,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/middlewares/require-role.middleware.js": {
+      "size": 951,
+      "mtime_nanos": 1781843595726725300,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/clients/auth/auth.client.js": {
+      "size": 2898,
+      "mtime_nanos": 1781843595633726100,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/facility/index.js": {
+      "size": 296,
+      "mtime_nanos": 1781843595712726700,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/inventory": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/gateway/dist/middlewares/require-elevated.middleware.js": {
+      "size": 1624,
+      "mtime_nanos": 1781843595917801800,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/clients/facility/onboarding.client.js": {
+      "size": 2802,
+      "mtime_nanos": 1781843595750725500,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/auth/index.js": {
+      "size": 272,
+      "mtime_nanos": 1781843595694726900,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/health/health.route.js": {
+      "size": 478,
+      "mtime_nanos": 1781843595715727700,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/clients/auth/index.js": {
+      "size": 856,
+      "mtime_nanos": 1781843595649725400,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/middlewares": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/gateway/dist/modules/facility/facility.controller.js": {
+      "size": 791,
+      "mtime_nanos": 1781843595706727100,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/request/request.service.js": {
+      "size": 241,
+      "mtime_nanos": 1781680136814493800,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/config/services.js": {
+      "size": 392,
+      "mtime_nanos": 1781843595612201700,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/inventory/inventory.controller.js": {
+      "size": 6425,
+      "mtime_nanos": 1781843595772727900,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/clients/auth": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/gateway/dist/modules/request/request.route.js": {
+      "size": 2316,
+      "mtime_nanos": 1781843595831261700,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/onboarding": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/gateway/dist/config": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/gateway/dist/clients/facility/index.js": {
+      "size": 919,
+      "mtime_nanos": 1781843595753726900,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/facility": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/gateway/dist/modules/onboarding/onboarding.route.js": {
+      "size": 1265,
+      "mtime_nanos": 1781843595845263800,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/config/env.js": {
+      "size": 726,
+      "mtime_nanos": 1781843595599200900,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/health/index.js": {
+      "size": 284,
+      "mtime_nanos": 1781843595717727900,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/system/system.controller.js": {
+      "size": 1018,
+      "mtime_nanos": 1781843595898802300,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/clients/coordination/request.client.js": {
+      "size": 4040,
+      "mtime_nanos": 1781843595788263800,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/system/system.route.js": {
+      "size": 338,
+      "mtime_nanos": 1781843595902800800,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/middlewares/request-logger.middleware.js": {
+      "size": 331,
+      "mtime_nanos": 1781843595878261200,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/request/request.controller.js": {
+      "size": 5405,
+      "mtime_nanos": 1781843595826262300,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/clients/coordination/coordination.client.js": {
+      "size": 415,
+      "mtime_nanos": 1781843595782263300,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/users/index.js": {
+      "size": 278,
+      "mtime_nanos": 1781843595869261900,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/.turbo/turbo-build.log": {
+      "size": 82,
+      "mtime_nanos": 1781843596127724800,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/clients/auth/users.client.js": {
+      "size": 2952,
+      "mtime_nanos": 1781843595645726200,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/middlewares/not-found.middleware.js": {
+      "size": 333,
+      "mtime_nanos": 1781843595875262600,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/auth/auth.service.js": {
+      "size": 261,
+      "mtime_nanos": 1781843595918802300,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/clients/facility/facility.js": {
+      "size": 584,
+      "mtime_nanos": 1781843595701726000,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/gateway/dist/app.js": {
+      "size": 1870,
+      "mtime_nanos": 1781843595910800000,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/request": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/gateway/dist/modules/auth/auth.route.js": {
+      "size": 615,
+      "mtime_nanos": 1781843595681727200,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/request/index.js": {
+      "size": 290,
+      "mtime_nanos": 1781843595832263200,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/clients/coordination/index.js": {
+      "size": 866,
+      "mtime_nanos": 1781843595812260700,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/users": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/gateway/dist/clients": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/gateway/dist/modules/system/index.js": {
+      "size": 807,
+      "mtime_nanos": 1781843595903800200,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/users/users.route.js": {
+      "size": 1818,
+      "mtime_nanos": 1781843595867261600,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/clients/facility/facility.client.js": {
+      "size": 395,
+      "mtime_nanos": 1781843595728727700,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/inventory/index.js": {
+      "size": 302,
+      "mtime_nanos": 1781843595780269000,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/auth": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/gateway/dist/modules/onboarding/index.js": {
+      "size": 308,
+      "mtime_nanos": 1781843595848260700,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/gateway/dist/modules/onboarding/onboarding.controller.js": {
+      "size": 3073,
+      "mtime_nanos": 1781843595839261500,
+      "mode": 420,
+      "is_dir": false
+    }
+  },
+  "order": [
+    "apps/gateway/.turbo/turbo-build.log",
+    "apps/gateway/dist",
+    "apps/gateway/dist/app.js",
+    "apps/gateway/dist/clients",
+    "apps/gateway/dist/clients/auth",
+    "apps/gateway/dist/clients/auth/auth.client.js",
+    "apps/gateway/dist/clients/auth/index.js",
+    "apps/gateway/dist/clients/auth/users.client.js",
+    "apps/gateway/dist/clients/coordination",
+    "apps/gateway/dist/clients/coordination/coordination.client.js",
+    "apps/gateway/dist/clients/coordination/index.js",
+    "apps/gateway/dist/clients/coordination/request.client.js",
+    "apps/gateway/dist/clients/facility",
+    "apps/gateway/dist/clients/facility/facility.client.js",
+    "apps/gateway/dist/clients/facility/facility.js",
+    "apps/gateway/dist/clients/facility/index.js",
+    "apps/gateway/dist/clients/facility/inventory.client.js",
+    "apps/gateway/dist/clients/facility/onboarding.client.js",
+    "apps/gateway/dist/config",
+    "apps/gateway/dist/config/env.js",
+    "apps/gateway/dist/config/services.js",
+    "apps/gateway/dist/index.js",
+    "apps/gateway/dist/middlewares",
+    "apps/gateway/dist/middlewares/error.middleware.js",
+    "apps/gateway/dist/middlewares/not-found.middleware.js",
+    "apps/gateway/dist/middlewares/request-logger.middleware.js",
+    "apps/gateway/dist/middlewares/require-elevated.middleware.js",
+    "apps/gateway/dist/middlewares/require-role.middleware.js",
+    "apps/gateway/dist/modules",
+    "apps/gateway/dist/modules/auth",
+    "apps/gateway/dist/modules/auth/auth.controller.js",
+    "apps/gateway/dist/modules/auth/auth.route.js",
+    "apps/gateway/dist/modules/auth/auth.service.js",
+    "apps/gateway/dist/modules/auth/index.js",
+    "apps/gateway/dist/modules/facility",
+    "apps/gateway/dist/modules/facility/facility.controller.js",
+    "apps/gateway/dist/modules/facility/facility.route.js",
+    "apps/gateway/dist/modules/facility/index.js",
+    "apps/gateway/dist/modules/health",
+    "apps/gateway/dist/modules/health/health.route.js",
+    "apps/gateway/dist/modules/health/index.js",
+    "apps/gateway/dist/modules/inventory",
+    "apps/gateway/dist/modules/inventory/index.js",
+    "apps/gateway/dist/modules/inventory/inventory.controller.js",
+    "apps/gateway/dist/modules/inventory/inventory.route.js",
+    "apps/gateway/dist/modules/onboarding",
+    "apps/gateway/dist/modules/onboarding/index.js",
+    "apps/gateway/dist/modules/onboarding/onboarding.controller.js",
+    "apps/gateway/dist/modules/onboarding/onboarding.route.js",
+    "apps/gateway/dist/modules/request",
+    "apps/gateway/dist/modules/request/index.js",
+    "apps/gateway/dist/modules/request/request.controller.js",
+    "apps/gateway/dist/modules/request/request.route.js",
+    "apps/gateway/dist/modules/request/request.service.js",
+    "apps/gateway/dist/modules/system",
+    "apps/gateway/dist/modules/system/index.js",
+    "apps/gateway/dist/modules/system/system.controller.js",
+    "apps/gateway/dist/modules/system/system.route.js",
+    "apps/gateway/dist/modules/users",
+    "apps/gateway/dist/modules/users/index.js",
+    "apps/gateway/dist/modules/users/users.controller.js",
+    "apps/gateway/dist/modules/users/users.route.js"
+  ]
+}

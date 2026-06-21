@@ -25,7 +25,7 @@ export const createInventoryItem = async (
     data: {
       facilityId,
       resourceType: data.resourceType as ResourceType,
-      itemName: data.itemName,
+      itemName: data.itemName.trim().toLowerCase(),
       unit: data.unit as InventoryUnit,
       status: InventoryStatus.AVAILABLE,
       metadata: data.metadata as Prisma.InputJsonValue,
@@ -49,7 +49,8 @@ export const findInventoryByName = async (
     where: {
       facilityId,
       resourceType,
-      itemName,
+      // Case-insensitive normalized match — items are stored lowercase
+      itemName: { equals: itemName.trim().toLowerCase(), mode: 'insensitive' },
       deletedAt: null,
     },
   });
@@ -186,5 +187,30 @@ export const findAlertsByInventory = async (inventoryId: string) => {
     where: { inventoryId },
     include: { inventory: { select: { itemName: true, resourceType: true } } },
     orderBy: { createdAt: 'desc' },
+  });
+};
+
+export const setReservedThreshold = async (
+  id: string,
+  reservedThreshold: number
+) => {
+  return prisma.inventory.update({
+    where: { id },
+    data: { reservedThreshold },
+  });
+};
+
+export const findAvailableInventoryForFacility = async (
+  facilityId: string,
+  resourceType?: ResourceType
+) => {
+  return prisma.inventory.findMany({
+    where: {
+      facilityId,
+      status: InventoryStatus.AVAILABLE,
+      deletedAt: null,
+      ...(resourceType ? { resourceType } : {}),
+    },
+    orderBy: { itemName: 'asc' },
   });
 };

@@ -48,6 +48,18 @@ const facilityNavItems = [
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
+const facilityAdminNavItems = [
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/requests', icon: ArrowLeftRight, label: 'Requests' },
+  { to: '/inventory', icon: Package, label: 'Inventory' },
+  { to: '/facilities', icon: Building2, label: 'Facilities' },
+  { to: '/users', icon: Users, label: 'Team' },
+  { to: '/network', icon: Map, label: 'Network Map' },
+  { to: '/notifications', icon: Bell, label: 'Notifications' },
+  { to: '/reports', icon: BarChart3, label: 'Reports' },
+  { to: '/settings', icon: Settings, label: 'Settings' },
+];
+
 const adminNavItems = [
   { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Admin Dashboard' },
   { to: '/admin/approvals', icon: ClipboardCheck, label: 'Facility Approvals' },
@@ -95,8 +107,12 @@ function NavItem({
 
 function Sidebar({ onClose }: { onClose?: () => void }) {
   const { user, logout } = useAuth();
-  const { isSuperAdmin } = useRole();
-  const items = isSuperAdmin ? adminNavItems : facilityNavItems;
+  const { isSuperAdmin, isFacilityAdmin } = useRole();
+  const items = isSuperAdmin
+    ? adminNavItems
+    : isFacilityAdmin
+      ? facilityAdminNavItems
+      : facilityNavItems;
 
   const initials = user
     ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()

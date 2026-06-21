@@ -158,6 +158,7 @@ export interface InventoryItem {
   unit: InventoryUnit;
   status: InventoryStatus;
   lowStockThreshold: number | null;
+  reservedThreshold: number | null;
   metadata: Record<string, unknown>;
   createdById: string;
   createdAt: string;
@@ -221,4 +222,5 @@ export interface ResourceRequest {
   completedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  reservedThresholdWarning?: string | null;
 }

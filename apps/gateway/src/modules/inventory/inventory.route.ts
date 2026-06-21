@@ -7,10 +7,12 @@ import { requireRole } from '../../middlewares/require-role.middleware';
 import {
   createInventoryController,
   getInventoryController,
+  getAvailableInventoryController,
   getInventoryItemController,
   updateInventoryStatusController,
   deleteInventoryController,
   setThresholdController,
+  setReservedThresholdController,
   createStockMovementController,
   getStockMovementsController,
   getActiveAlertsController,
@@ -24,16 +26,27 @@ const inventoryAccess = requireRole(
   UserRole.FACILITY_ADMIN
 );
 
+const anyAuthenticated = requireRole(
+  UserRole.SUPER_ADMIN,
+  UserRole.FACILITY_ADMIN,
+  UserRole.COORDINATION_MANAGER,
+  UserRole.INVENTORY_MANAGER
+);
+
 // Inventory CRUD
 inventoryRouter.post('/', inventoryAccess, createInventoryController);
 inventoryRouter.get('/', inventoryAccess, getInventoryController);
 
-// NOTE: /alerts/active must be declared before /:id to prevent Express
-// from treating "alerts" as an :id param
+// NOTE: static paths must come before /:id
 inventoryRouter.get(
   '/alerts/active',
   inventoryAccess,
   getActiveAlertsController
+);
+inventoryRouter.get(
+  '/available',
+  anyAuthenticated,
+  getAvailableInventoryController
 );
 
 inventoryRouter.get('/:id', inventoryAccess, getInventoryItemController);
@@ -49,6 +62,12 @@ inventoryRouter.patch(
   '/:id/threshold',
   inventoryAccess,
   setThresholdController
+);
+
+inventoryRouter.patch(
+  '/:id/reserved-threshold',
+  inventoryAccess,
+  setReservedThresholdController
 );
 
 // Stock Movements

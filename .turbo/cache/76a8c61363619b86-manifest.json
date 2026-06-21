@@ -1,0 +1,216 @@
+{
+  "files": {
+    "apps/facility-service/dist/routes/internal.route.js": {
+      "size": 2241,
+      "mtime_nanos": 1781847227947880900,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/modules/onboarding/index.js": {
+      "size": 311,
+      "mtime_nanos": 1781847228502371400,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/modules/facilities/facility.controller.js": {
+      "size": 2069,
+      "mtime_nanos": 1781847228019929400,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/modules/facilities/facility.repository.js": {
+      "size": 541,
+      "mtime_nanos": 1781847227950884400,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/modules/onboarding/onboarding.repository.js": {
+      "size": 4225,
+      "mtime_nanos": 1781847228370433100,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/modules/facilities": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/facility-service/dist/modules/facilities/index.js": {
+      "size": 810,
+      "mtime_nanos": 1781847228026928100,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/modules/inventory/index.js": {
+      "size": 810,
+      "mtime_nanos": 1781847228362435900,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/config/env.js": {
+      "size": 751,
+      "mtime_nanos": 1781847228544178200,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/middlewares": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/facility-service/dist/middlewares/error.middleware.js": {
+      "size": 777,
+      "mtime_nanos": 1781847228509369600,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/modules/facilities/facility.service.js": {
+      "size": 1423,
+      "mtime_nanos": 1781847228013406300,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/modules/inventory/inventory.service.js": {
+      "size": 10587,
+      "mtime_nanos": 1781847228094164500,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/modules/onboarding/onboarding.routes.js": {
+      "size": 873,
+      "mtime_nanos": 1781847228498370000,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/modules/onboarding/onboarding.service.js": {
+      "size": 6175,
+      "mtime_nanos": 1781847228462302900,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/modules/inventory/inventory.repository.js": {
+      "size": 5931,
+      "mtime_nanos": 1781847227928881800,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/modules/onboarding/onboarding.controller.js": {
+      "size": 4001,
+      "mtime_nanos": 1781847228494370800,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/.turbo/turbo-build.log": {
+      "size": 100,
+      "mtime_nanos": 1781847228898472500,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/config": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/facility-service/dist": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/facility-service/dist/routes": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/facility-service/dist/routes/health.route.js": {
+      "size": 487,
+      "mtime_nanos": 1781847227818880200,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/index.js": {
+      "size": 294,
+      "mtime_nanos": 1781847228594277400,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/app.js": {
+      "size": 1279,
+      "mtime_nanos": 1781847228513373200,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/modules/onboarding": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/facility-service/dist/modules/inventory": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/facility-service/dist/modules": {
+      "size": 0,
+      "mtime_nanos": 0,
+      "mode": 0,
+      "is_dir": true
+    },
+    "apps/facility-service/dist/modules/inventory/inventory.route.js": {
+      "size": 1395,
+      "mtime_nanos": 1781847228360433200,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/modules/inventory/inventory.controller.js": {
+      "size": 8990,
+      "mtime_nanos": 1781847228158164400,
+      "mode": 420,
+      "is_dir": false
+    },
+    "apps/facility-service/dist/modules/facilities/facility.routes.js": {
+      "size": 512,
+      "mtime_nanos": 1781847228023927500,
+      "mode": 420,
+      "is_dir": false
+    }
+  },
+  "order": [
+    "apps/facility-service/.turbo/turbo-build.log",
+    "apps/facility-service/dist",
+    "apps/facility-service/dist/app.js",
+    "apps/facility-service/dist/config",
+    "apps/facility-service/dist/config/env.js",
+    "apps/facility-service/dist/index.js",
+    "apps/facility-service/dist/middlewares",
+    "apps/facility-service/dist/middlewares/error.middleware.js",
+    "apps/facility-service/dist/modules",
+    "apps/facility-service/dist/modules/facilities",
+    "apps/facility-service/dist/modules/facilities/facility.controller.js",
+    "apps/facility-service/dist/modules/facilities/facility.repository.js",
+    "apps/facility-service/dist/modules/facilities/facility.routes.js",
+    "apps/facility-service/dist/modules/facilities/facility.service.js",
+    "apps/facility-service/dist/modules/facilities/index.js",
+    "apps/facility-service/dist/modules/inventory",
+    "apps/facility-service/dist/modules/inventory/index.js",
+    "apps/facility-service/dist/modules/inventory/inventory.controller.js",
+    "apps/facility-service/dist/modules/inventory/inventory.repository.js",
+    "apps/facility-service/dist/modules/inventory/inventory.route.js",
+    "apps/facility-service/dist/modules/inventory/inventory.service.js",
+    "apps/facility-service/dist/modules/onboarding",
+    "apps/facility-service/dist/modules/onboarding/index.js",
+    "apps/facility-service/dist/modules/onboarding/onboarding.controller.js",
+    "apps/facility-service/dist/modules/onboarding/onboarding.repository.js",
+    "apps/facility-service/dist/modules/onboarding/onboarding.routes.js",
+    "apps/facility-service/dist/modules/onboarding/onboarding.service.js",
+    "apps/facility-service/dist/routes",
+    "apps/facility-service/dist/routes/health.route.js",
+    "apps/facility-service/dist/routes/internal.route.js"
+  ]
+}

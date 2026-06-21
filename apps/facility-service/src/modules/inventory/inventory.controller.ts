@@ -21,10 +21,12 @@ import {
   setInventoryStatus,
   deleteInventory,
   updateThreshold,
+  updateReservedThreshold,
   recordStockMovement,
   getStockMovements,
   getActiveAlerts,
   getAlertsByInventoryItem,
+  getAvailableInventoryForFacility,
 } from './inventory.service';
 
 // ===========================================================================
@@ -331,6 +333,81 @@ export const getAlertsByInventoryController = async (
       success: true,
       message: 'Alert history retrieved successfully',
       data: alerts,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const setReservedThresholdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params['id'] as string;
+    const facilityId = req.headers['x-facility-id'] as string;
+    const performedById = req.headers['x-user-id'] as string;
+
+    const result = SetThresholdSchema.safeParse(req.body);
+
+    if (!result.success) {
+      return next(createValidationError());
+    }
+
+    const item = await updateReservedThreshold(
+      id,
+      facilityId,
+      result.data.threshold,
+      performedById
+    );
+
+    const response: ApiResponse<InventoryItemDTO> = {
+      success: true,
+      message: 'Reserved threshold updated successfully',
+      data: item,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getAvailableInventoryController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { facilityId, resourceType } = req.query as {
+      facilityId: string;
+      resourceType?: string;
+    };
+
+    if (!facilityId) {
+      return next(createValidationError());
+    }
+
+    const validResourceType =
+      resourceType &&
+      Object.values(ResourceType).includes(resourceType as ResourceType)
+        ? (resourceType as ResourceType)
+        : undefined;
+
+    const items = await getAvailableInventoryForFacility(
+      facilityId,
+      validResourceType
+    );
+
+    const response: ApiResponse<InventoryItemDTO[]> = {
+      success: true,
+      message: 'Available inventory retrieved successfully',
+      data: items,
       timestamp: new Date().toISOString(),
     };
 

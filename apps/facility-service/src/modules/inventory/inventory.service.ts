@@ -20,9 +20,11 @@ import {
   findInventoryById,
   findInventoryByName,
   findInventoryByFacility,
+  findAvailableInventoryForFacility,
   updateInventoryStatus,
   softDeleteInventory,
   setInventoryThreshold,
+  setReservedThreshold,
   createStockMovement,
   findStockMovementsByInventory,
   deriveCurrentQuantity,
@@ -400,4 +402,42 @@ export const getAlertsByInventoryItem = async (
   const alerts = await findAlertsByInventory(inventoryId);
 
   return alerts.map(toAlertDTO);
+};
+
+export const updateReservedThreshold = async (
+  id: string,
+  facilityId: string,
+  threshold: number,
+  performedById: string
+): Promise<InventoryItemDTO> => {
+  const item = await findInventoryById(id);
+
+  if (!item) throw createNotFoundError('Inventory item not found');
+  if (item.facilityId !== facilityId)
+    throw createAuthorizationError('Access denied');
+
+  const updated = await setReservedThreshold(id, threshold);
+
+  await writeAuditLog({
+    actorId: performedById,
+    action: AuditAction.INVENTORY_UPDATED,
+    entityType: 'Inventory',
+    entityId: id,
+    facilityId,
+    previousValue: { reservedThreshold: item.reservedThreshold },
+    newValue: { reservedThreshold: threshold },
+  });
+
+  return toInventoryItemDTO(updated);
+};
+
+export const getAvailableInventoryForFacility = async (
+  facilityId: string,
+  resourceType?: ResourceType
+): Promise<InventoryItemDTO[]> => {
+  const items = await findAvailableInventoryForFacility(
+    facilityId,
+    resourceType
+  );
+  return Promise.all(items.map(toInventoryItemDTO));
 };

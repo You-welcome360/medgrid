@@ -193,3 +193,43 @@ export const getAlertsByInventoryFromFacilityService = async (
 
   return response.json() as Promise<ApiResponse<LowStockAlertDTO[]>>;
 };
+
+export const setReservedThresholdInFacilityService = async (
+  id: string,
+  data: { threshold: number },
+  headers: InventoryHeaders
+): Promise<ApiResponse<InventoryItemDTO>> => {
+  const response = await fetch(`${base()}/${id}/reserved-threshold`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: headers.authorizationHeader ?? '',
+      'x-facility-id': headers.facilityId,
+      'x-user-id': headers.userId,
+    },
+    body: JSON.stringify(data),
+  });
+
+  return response.json() as Promise<ApiResponse<InventoryItemDTO>>;
+};
+
+export const getAvailableInventoryFromFacilityService = async (
+  facilityId: string,
+  resourceType: string | undefined,
+  headers: InventoryHeaders
+): Promise<ApiResponse<InventoryItemDTO[]>> => {
+  const url = new URL(`${base()}/available`);
+  url.searchParams.set('facilityId', facilityId);
+  if (resourceType) url.searchParams.set('resourceType', resourceType);
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: {
+      Authorization: headers.authorizationHeader ?? '',
+      'x-facility-id': headers.facilityId,
+      'x-user-id': headers.userId,
+    },
+  });
+
+  return response.json() as Promise<ApiResponse<InventoryItemDTO[]>>;
+};

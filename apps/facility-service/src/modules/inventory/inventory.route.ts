@@ -3,10 +3,12 @@ import { Router } from 'express';
 import {
   createInventoryController,
   getInventoryController,
+  getAvailableInventoryController,
   getInventoryItemController,
   updateInventoryStatusController,
   deleteInventoryController,
   setThresholdController,
+  setReservedThresholdController,
   createStockMovementController,
   getStockMovementsController,
   getActiveAlertsController,
@@ -19,9 +21,9 @@ export const inventoryRouter = Router();
 inventoryRouter.post('/', createInventoryController);
 inventoryRouter.get('/', getInventoryController);
 
-// NOTE: /alerts/active must be declared before /:id to prevent Express
-// from treating "alerts" as an :id param
+// NOTE: static paths must come before /:id
 inventoryRouter.get('/alerts/active', getActiveAlertsController);
+inventoryRouter.get('/available', getAvailableInventoryController);
 
 inventoryRouter.get('/:id', getInventoryItemController);
 inventoryRouter.patch('/:id/status', updateInventoryStatusController);
@@ -29,6 +31,10 @@ inventoryRouter.delete('/:id', deleteInventoryController);
 
 // Threshold
 inventoryRouter.patch('/:id/threshold', setThresholdController);
+inventoryRouter.patch(
+  '/:id/reserved-threshold',
+  setReservedThresholdController
+);
 
 // Stock Movements
 inventoryRouter.post('/:id/movements', createStockMovementController);
