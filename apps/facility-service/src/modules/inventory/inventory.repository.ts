@@ -21,6 +21,8 @@ export const createInventoryItem = async (
   facilityId: string,
   createdById: string
 ) => {
+  const isMovable = data.isMovable ?? (data.resourceType !== ResourceType.MEDICAL_EQUIPMENT);
+
   return prisma.inventory.create({
     data: {
       facilityId,
@@ -29,10 +31,13 @@ export const createInventoryItem = async (
       unit: data.unit as InventoryUnit,
       status: InventoryStatus.AVAILABLE,
       metadata: data.metadata as Prisma.InputJsonValue,
+      price: data.price,
+      isMovable,
       createdById,
     },
   });
 };
+
 
 export const findInventoryById = async (id: string) => {
   return prisma.inventory.findUnique({
@@ -214,3 +219,50 @@ export const findAvailableInventoryForFacility = async (
     orderBy: { itemName: 'asc' },
   });
 };
+
+export const findNetworkResources = async () => {
+  return prisma.inventory.findMany({
+    where: {
+      status: InventoryStatus.AVAILABLE,
+      deletedAt: null,
+    },
+    distinct: ['resourceType', 'itemName'],
+    select: {
+      resourceType: true,
+      itemName: true,
+      isMovable: true,
+    },
+    orderBy: { itemName: 'asc' },
+  });
+};
+
+export const findFacilitiesByResource = async (
+  resourceType: ResourceType,
+  itemName?: string
+) => {
+  return prisma.inventory.findMany({
+    where: {
+      resourceType,
+      status: InventoryStatus.AVAILABLE,
+      deletedAt: null,
+      ...(itemName ? { itemName: { equals: itemName.trim().toLowerCase(), mode: 'insensitive' } } : {}),
+    },
+    include: {
+      facility: {
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          phone: true,
+          email: true,
+          region: true,
+          district: true,
+          latitude: true,
+          longitude: true,
+        },
+      },
+    },
+    orderBy: { itemName: 'asc' },
+  });
+};
+

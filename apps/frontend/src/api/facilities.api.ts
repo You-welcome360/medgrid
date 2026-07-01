@@ -46,4 +46,15 @@ export const facilitiesApi = {
   list: () => api.get<Facility[]>('/facilities'),
 
   get: (id: string) => api.get<Facility>(`/facilities/${id}`),
+
+  update: (
+    id: string,
+    data: {
+      facilityName?: string;
+      phone?: string;
+      email?: string;
+      address?: { region: string; district: string; addressLine?: string | null };
+      location?: { latitude: number; longitude: number };
+    }
+  ) => api.patch<Facility>(`/facilities/${id}`, data),
 };

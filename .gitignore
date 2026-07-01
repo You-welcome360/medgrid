@@ -20,3 +20,10 @@ coverage
 
 .venv
 /generated/prisma
+**/.turbo/
+.turbo-build.log
+*.turbo-build.log
+dist/
+**/dist/
+node_modules/
+**/node_modules/

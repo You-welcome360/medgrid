@@ -1,4 +1,4 @@
-import type { ApiResponse, CreateFacilityDTO } from '@medgrid/shared';
+import type { ApiResponse, CreateFacilityDTO, UpdateFacilityDTO } from '@medgrid/shared';
 
 import { services } from '../../config/services';
 
@@ -50,6 +50,20 @@ export const getFacilityByIdFromFacilityService = async (
   const response = await fetch(`${base()}/${id}`, { method: 'GET' });
   return response.json() as Promise<ApiResponse<FacilityDTO>>;
 };
+
+export const updateFacilityInFacilityService = async (
+  id: string,
+  payload: UpdateFacilityDTO
+): Promise<ApiResponse<FacilityDTO>> => {
+  const response = await fetch(`${base()}/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  return response.json() as Promise<ApiResponse<FacilityDTO>>;
+};
+
 
 export const getFacilityServiceHealth = async (): Promise<
   ApiResponse<{ status: string }>

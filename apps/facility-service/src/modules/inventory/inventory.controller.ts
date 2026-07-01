@@ -27,6 +27,8 @@ import {
   getActiveAlerts,
   getAlertsByInventoryItem,
   getAvailableInventoryForFacility,
+  getNetworkResources,
+  getResourceFacilities,
 } from './inventory.service';
 
 // ===========================================================================
@@ -408,6 +410,65 @@ export const getAvailableInventoryController = async (
       success: true,
       message: 'Available inventory retrieved successfully',
       data: items,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getNetworkResourcesController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const resources = await getNetworkResources();
+
+    const response: ApiResponse<typeof resources> = {
+      success: true,
+      message: 'Network resources retrieved successfully',
+      data: resources,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getNetworkFacilitiesController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { resourceType, itemName } = req.query as {
+      resourceType: string;
+      itemName?: string;
+    };
+
+    if (!resourceType) {
+      return next(createValidationError('resourceType is required'));
+    }
+
+    const validResourceType = Object.values(ResourceType).includes(resourceType as ResourceType)
+      ? (resourceType as ResourceType)
+      : undefined;
+
+    if (!validResourceType) {
+      return next(createValidationError('Invalid resourceType'));
+    }
+
+    const facilities = await getResourceFacilities(validResourceType, itemName);
+
+    const response: ApiResponse<typeof facilities> = {
+      success: true,
+      message: 'Resource facilities retrieved successfully',
+      data: facilities,
       timestamp: new Date().toISOString(),
     };
 

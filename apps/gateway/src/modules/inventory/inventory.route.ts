@@ -17,6 +17,8 @@ import {
   getStockMovementsController,
   getActiveAlertsController,
   getAlertsByInventoryController,
+  getNetworkResourcesController,
+  getNetworkFacilitiesController,
 } from './inventory.controller';
 
 export const inventoryRouter = Router();
@@ -47,6 +49,16 @@ inventoryRouter.get(
   '/available',
   anyAuthenticated,
   getAvailableInventoryController
+);
+inventoryRouter.get(
+  '/network/resources',
+  anyAuthenticated,
+  getNetworkResourcesController
+);
+inventoryRouter.get(
+  '/network/facilities',
+  anyAuthenticated,
+  getNetworkFacilitiesController
 );
 
 inventoryRouter.get('/:id', inventoryAccess, getInventoryItemController);

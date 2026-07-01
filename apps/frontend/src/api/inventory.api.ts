@@ -7,6 +7,7 @@ import type {
   ResourceType,
   StockMovementType,
   InventoryUnit,
+  NetworkFacilityItem,
 } from '@/types';
 
 export const inventoryApi = {
@@ -35,6 +36,8 @@ export const inventoryApi = {
     itemName: string;
     unit: InventoryUnit;
     metadata: Record<string, unknown>;
+    price?: number;
+    isMovable?: boolean;
   }) => api.post<InventoryItem>('/inventory', data),
 
   updateStatus: (id: string, status: InventoryStatus) =>
@@ -67,4 +70,17 @@ export const inventoryApi = {
 
   getAlertsByItem: (id: string) =>
     api.get<LowStockAlert[]>(`/inventory/${id}/alerts`),
+
+  getNetworkResources: () =>
+    api.get<Array<{ resourceType: ResourceType; itemName: string; isMovable: boolean }>>(
+      '/inventory/network/resources'
+    ),
+
+  getNetworkFacilities: (resourceType: ResourceType, itemName?: string) => {
+    const query = new URLSearchParams();
+    query.set('resourceType', resourceType);
+    if (itemName) query.set('itemName', itemName);
+    return api.get<NetworkFacilityItem[]>(`/inventory/network/facilities?${query.toString()}`);
+  },
 };
+

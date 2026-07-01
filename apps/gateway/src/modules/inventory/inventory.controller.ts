@@ -22,6 +22,8 @@ import {
   getStockMovementsFromFacilityService,
   getActiveAlertsFromFacilityService,
   getAlertsByInventoryFromFacilityService,
+  getNetworkResourcesFromFacilityService,
+  getNetworkFacilitiesFromFacilityService,
 } from '../../clients/facility';
 
 // ===========================================================================
@@ -307,6 +309,49 @@ export const getAvailableInventoryController = async (
     const response = await getAvailableInventoryFromFacilityService(
       facilityId,
       resourceType,
+      getInventoryHeaders(req, res)
+    );
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getNetworkResourcesController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const response = await getNetworkResourcesFromFacilityService(
+      getInventoryHeaders(req, res)
+    );
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getNetworkFacilitiesController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { resourceType, itemName } = req.query as {
+      resourceType: string;
+      itemName?: string;
+    };
+
+    if (!resourceType) {
+      return next(createValidationError('resourceType is required'));
+    }
+
+    const response = await getNetworkFacilitiesFromFacilityService(
+      resourceType,
+      itemName,
       getInventoryHeaders(req, res)
     );
 

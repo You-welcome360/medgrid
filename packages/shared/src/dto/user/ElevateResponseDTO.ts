@@ -1,7 +1,8 @@
 export interface ElevateResponseDTO {
   elevatedToken: string;
 
-  targetFacilityId: string;
+  targetFacilityId?: string | null;
 
   expiresAt: string;
 }
+

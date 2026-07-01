@@ -110,14 +110,23 @@ const toUserDTO = (
 
 export const inviteUser = async (
   data: InviteUserDTO,
-  facilityId: string,
+  facilityId: string | null,
   invitedById: string,
   invitedByRole: string
 ): Promise<InviteResponseDTO> => {
-  // FACILITY_ADMIN can only invite within their own facility
-  if (invitedByRole === UserRole.FACILITY_ADMIN) {
-    // facilityId comes from the token — already scoped correctly by the gateway
+  // Only SUPER_ADMIN can invite another SUPER_ADMIN
+  if (
+    data.role === UserRole.SUPER_ADMIN &&
+    invitedByRole !== UserRole.SUPER_ADMIN
+  ) {
+    throw createAuthorizationError(
+      'Only a SUPER_ADMIN can invite another SUPER_ADMIN'
+    );
   }
+
+  // Super admins are not scoped to any facility
+  const effectiveFacilityId =
+    data.role === UserRole.SUPER_ADMIN ? null : facilityId;
 
   const email = data.email.trim().toLowerCase();
 
@@ -130,7 +139,7 @@ export const inviteUser = async (
   const user = await createPendingUser(
     email,
     data.role as unknown as UserRole,
-    facilityId,
+    effectiveFacilityId,
     invitedById
   );
 
@@ -140,7 +149,7 @@ export const inviteUser = async (
   );
 
   const rawToken = signToken(
-    { sub: user.id, type: 'invitation', facilityId },
+    { sub: user.id, type: 'invitation', facilityId: effectiveFacilityId },
     env.JWT_ACCESS_SECRET,
     `${INVITATION_EXPIRES_HOURS}h`
   );
@@ -150,7 +159,7 @@ export const inviteUser = async (
 
   await createInvitation(
     user.id,
-    facilityId,
+    effectiveFacilityId,
     tokenHash,
     expiresAt,
     invitedById
@@ -162,7 +171,7 @@ export const inviteUser = async (
     action: AuditAction.USER_CREATED,
     entityType: 'User',
     entityId: user.id,
-    facilityId,
+    facilityId: effectiveFacilityId ?? undefined,
     newValue: { email, role: data.role },
   });
 
@@ -172,6 +181,7 @@ export const inviteUser = async (
     expiresAt: expiresAt.toISOString(),
   };
 };
+
 
 // ===========================================================================
 // Complete invitation

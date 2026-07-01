@@ -233,3 +233,40 @@ export const getAvailableInventoryFromFacilityService = async (
 
   return response.json() as Promise<ApiResponse<InventoryItemDTO[]>>;
 };
+
+export const getNetworkResourcesFromFacilityService = async (
+  headers: InventoryHeaders
+): Promise<ApiResponse<Array<{ resourceType: string; itemName: string; isMovable: boolean }>>> => {
+  const response = await fetch(`${base()}/network/resources`, {
+    method: 'GET',
+    headers: {
+      Authorization: headers.authorizationHeader ?? '',
+      'x-facility-id': headers.facilityId,
+      'x-user-id': headers.userId,
+    },
+  });
+
+  return response.json() as Promise<ApiResponse<Array<{ resourceType: string; itemName: string; isMovable: boolean }>>>;
+};
+
+export const getNetworkFacilitiesFromFacilityService = async (
+  resourceType: string,
+  itemName: string | undefined,
+  headers: InventoryHeaders
+): Promise<ApiResponse<unknown[]>> => {
+  const url = new URL(`${base()}/network/facilities`);
+  url.searchParams.set('resourceType', resourceType);
+  if (itemName) url.searchParams.set('itemName', itemName);
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: {
+      Authorization: headers.authorizationHeader ?? '',
+      'x-facility-id': headers.facilityId,
+      'x-user-id': headers.userId,
+    },
+  });
+
+  return response.json() as Promise<ApiResponse<unknown[]>>;
+};
+

@@ -173,8 +173,31 @@ export function InventoryItemDetail({ id }: InventoryItemDetailProps) {
               </div>
             </div>
 
+            {/* Purchase & Shareability */}
+            <div>
+              <p className="text-sm text-muted-foreground">Properties</p>
+              <div className="mt-2 space-y-2 text-sm">
+                <div className="flex justify-between border-b pb-1">
+                  <span className="text-muted-foreground">Unit Price</span>
+                  <span className="font-medium">
+                    {item.price !== undefined && item.price !== null ? `$${item.price.toFixed(2)}` : '—'}
+                  </span>
+                </div>
+                <div className="flex justify-between border-b pb-1">
+                  <span className="text-muted-foreground">Shareability</span>
+                  <span className="font-medium text-xs">
+                    {item.isMovable ? (
+                      <span className="text-emerald-600">Movable</span>
+                    ) : (
+                      <span className="text-slate-500">Stationary</span>
+                    )}
+                  </span>
+                </div>
+              </div>
+            </div>
+
             {/* Threshold controls — 2 columns */}
-            <div className="sm:col-span-2 grid grid-cols-2 gap-4">
+            <div className="sm:col-span-3 grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">
                   Low Stock Threshold

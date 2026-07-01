@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   ChevronDown,
+  Globe,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -43,6 +44,7 @@ const facilityNavItems = [
   { to: '/inventory', icon: Package, label: 'Inventory' },
   { to: '/facilities', icon: Building2, label: 'Facilities' },
   { to: '/network', icon: Map, label: 'Network Map' },
+  { to: '/network-directory', icon: Globe, label: 'Network Directory' },
   { to: '/notifications', icon: Bell, label: 'Notifications' },
   { to: '/reports', icon: BarChart3, label: 'Reports' },
   { to: '/settings', icon: Settings, label: 'Settings' },
@@ -55,6 +57,7 @@ const facilityAdminNavItems = [
   { to: '/facilities', icon: Building2, label: 'Facilities' },
   { to: '/users', icon: Users, label: 'Team' },
   { to: '/network', icon: Map, label: 'Network Map' },
+  { to: '/network-directory', icon: Globe, label: 'Network Directory' },
   { to: '/notifications', icon: Bell, label: 'Notifications' },
   { to: '/reports', icon: BarChart3, label: 'Reports' },
   { to: '/settings', icon: Settings, label: 'Settings' },

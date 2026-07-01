@@ -1,8 +1,12 @@
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod/v3';
 import { Loader2, Sun, Moon, Monitor } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+import { useFacility } from '@/features/facilities/hooks/use-facilities';
+import { facilitiesApi } from '@/api/facilities.api';
 
 import { authApi } from '@/api/auth.api';
 import { useAuthStore } from '@/stores/auth.store';
@@ -257,6 +261,246 @@ function AccountSection() {
 }
 
 // ============================================================
+// Facility profile section
+// ============================================================
+
+const facilitySchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().min(5, 'Phone must be at least 5 characters'),
+  region: z.string().min(2, 'Region must be at least 2 characters'),
+  district: z.string().min(2, 'District must be at least 2 characters'),
+  addressLine: z.string().optional().or(z.literal('')),
+  latitude: z.coerce.number().min(-90).max(90, 'Latitude must be between -90 and 90'),
+  longitude: z.coerce.number().min(-180).max(180, 'Longitude must be between -180 and 180'),
+});
+
+type FacilityForm = z.infer<typeof facilitySchema>;
+
+function FacilityProfileSection() {
+  const user = useAuthStore((s) => s.user);
+  const queryClient = useQueryClient();
+
+  if (!user || !user.facilityId) return null;
+
+  const { data: facility, isLoading, error } = useFacility(user.facilityId);
+
+  const form = useForm<FacilityForm>({
+    resolver: zodResolver(facilitySchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      region: '',
+      district: '',
+      addressLine: '',
+      latitude: 0,
+      longitude: 0,
+    },
+  });
+
+  useEffect(() => {
+    if (facility) {
+      form.reset({
+        name: facility.name,
+        email: facility.email,
+        phone: facility.phone,
+        region: facility.region,
+        district: facility.district,
+        addressLine: facility.addressLine ?? '',
+        latitude: facility.latitude,
+        longitude: facility.longitude,
+      });
+    }
+  }, [facility, form]);
+
+  const onSubmit = async (data: FacilityForm) => {
+    try {
+      await facilitiesApi.update(user.facilityId!, {
+        facilityName: data.name,
+        phone: data.phone,
+        email: data.email,
+        address: {
+          region: data.region,
+          district: data.district,
+          addressLine: data.addressLine || null,
+        },
+        location: {
+          latitude: data.latitude,
+          longitude: data.longitude,
+        },
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['facilities'] });
+      toast.success('Facility details updated successfully');
+    } catch (error) {
+      if (error instanceof ApiError) {
+        toast.error(error.message);
+      } else {
+        toast.error('Failed to update facility details');
+      }
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Facility Profile & Location</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="h-10 bg-slate-800/50 animate-pulse rounded" />
+          <div className="h-10 bg-slate-800/50 animate-pulse rounded" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error || !facility) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Facility Profile & Location</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-red-400">Failed to load facility profile details.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base">Facility Profile & Location</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Facility Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contact Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="addressLine"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Address Line</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="region"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Region</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="district"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>District</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="latitude"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Latitude</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="any" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="longitude"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Longitude</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="any" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================
 // Page
 // ============================================================
 
@@ -265,6 +509,7 @@ export default function SettingsPage() {
     <div className="space-y-6 max-w-2xl">
       <PageHeader title="Settings" />
       <AccountSection />
+      <FacilityProfileSection />
       <AppearanceSection />
       <ChangePasswordSection />
     </div>

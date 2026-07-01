@@ -10,4 +10,8 @@ export interface CreateInventoryBatchDTO {
   unit: InventoryUnit;
 
   metadata: InventoryMetadata;
+
+  price?: number;
+
+  isMovable?: boolean;
 }

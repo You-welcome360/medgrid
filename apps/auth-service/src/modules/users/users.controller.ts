@@ -56,7 +56,7 @@ export const inviteUserController = async (
 
     const response = await inviteUser(
       result.data,
-      getFacilityId(req),
+      getFacilityIdOrNull(req),
       getUserId(req),
       getUserRole(req)
     );

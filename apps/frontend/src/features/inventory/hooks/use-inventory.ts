@@ -16,6 +16,9 @@ const KEYS = {
   detail: (id: string) => ['inventory', id] as const,
   movements: (id: string) => ['inventory', id, 'movements'] as const,
   alerts: ['inventory', 'alerts'] as const,
+  networkResources: ['inventory', 'network', 'resources'] as const,
+  networkFacilities: (resourceType: ResourceType, itemName?: string) =>
+    ['inventory', 'network', 'facilities', resourceType, itemName] as const,
 };
 
 export function useInventory(params?: {
@@ -64,6 +67,8 @@ export function useCreateInventoryItem() {
       itemName: string;
       unit: InventoryUnit;
       metadata: Record<string, unknown>;
+      price?: number;
+      isMovable?: boolean;
     }) => inventoryApi.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.all });
@@ -150,3 +155,21 @@ export function useRecordMovement() {
     onError: (err: Error) => toast.error(err.message),
   });
 }
+
+export function useNetworkResources() {
+  return useQuery({
+    queryKey: KEYS.networkResources,
+    queryFn: () => inventoryApi.getNetworkResources(),
+    select: (res) => res.data ?? [],
+  });
+}
+
+export function useNetworkFacilities(resourceType: ResourceType, itemName?: string) {
+  return useQuery({
+    queryKey: KEYS.networkFacilities(resourceType, itemName),
+    queryFn: () => inventoryApi.getNetworkFacilities(resourceType, itemName),
+    select: (res) => res.data ?? [],
+    enabled: !!resourceType,
+  });
+}
+

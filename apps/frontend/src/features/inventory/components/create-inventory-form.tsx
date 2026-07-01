@@ -1,9 +1,12 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod/v3';
 import { Loader2, Droplets, Shield, Pill, Stethoscope } from 'lucide-react';
 
+import { useAuthStore } from '@/stores/auth.store';
+import { useFacility } from '@/features/facilities/hooks/use-facilities';
 import {
   useCreateInventoryItem,
   useRecordMovement,
@@ -47,6 +50,9 @@ const baseSchema = z.object({
     'BOTTLES',
   ]),
 
+  price: z.coerce.number().min(0).optional(),
+  isMovable: z.boolean().optional(),
+
   // Opening stock (optional)
   openingStock: z.coerce.number().int().min(0).optional(),
   openingStockReason: z.string().max(500).optional(),
@@ -75,6 +81,13 @@ const baseSchema = z.object({
 });
 
 type CreateInventoryForm = z.infer<typeof baseSchema>;
+
+const FACILITY_RESOURCE_ACCESS = {
+  HOSPITAL: ['BLOOD', 'PPE', 'MEDICATION', 'MEDICAL_EQUIPMENT'],
+  BLOOD_BANK: ['BLOOD'],
+  PHARMACY: ['MEDICATION'],
+  PPE_SUPPLIER: ['PPE', 'MEDICAL_EQUIPMENT'],
+} as const;
 
 // ============================================================
 // Resource type options
@@ -120,7 +133,7 @@ const UNITS = [
 function BloodMetadata({
   form,
 }: {
-  form: ReturnType<typeof useForm<CreateInventoryForm>>;
+  form: UseFormReturn<CreateInventoryForm>;
 }) {
   return (
     <div className="space-y-4">
@@ -189,7 +202,7 @@ function BloodMetadata({
 function MedicationMetadata({
   form,
 }: {
-  form: ReturnType<typeof useForm<CreateInventoryForm>>;
+  form: UseFormReturn<CreateInventoryForm>;
 }) {
   return (
     <div className="space-y-4">
@@ -279,7 +292,7 @@ function MedicationMetadata({
 function PPEMetadata({
   form,
 }: {
-  form: ReturnType<typeof useForm<CreateInventoryForm>>;
+  form: UseFormReturn<CreateInventoryForm>;
 }) {
   return (
     <div className="space-y-4">
@@ -338,7 +351,7 @@ function PPEMetadata({
 function EquipmentMetadata({
   form,
 }: {
-  form: ReturnType<typeof useForm<CreateInventoryForm>>;
+  form: UseFormReturn<CreateInventoryForm>;
 }) {
   return (
     <div className="space-y-4">
@@ -444,6 +457,8 @@ export function CreateInventoryForm() {
   const navigate = useNavigate();
   const createItem = useCreateInventoryItem();
   const recordMovement = useRecordMovement();
+  const { user } = useAuthStore();
+  const { data: facility } = useFacility(user?.facilityId ?? '');
 
   const form = useForm<CreateInventoryForm>({
     resolver: zodResolver(baseSchema),
@@ -451,6 +466,8 @@ export function CreateInventoryForm() {
       resourceType: 'BLOOD',
       unit: 'UNITS',
       openingStock: undefined,
+      isMovable: true,
+      price: undefined,
     },
   });
 
@@ -458,12 +475,38 @@ export function CreateInventoryForm() {
   const selectedType = form.watch('resourceType');
   const openingStock = form.watch('openingStock');
 
+  const allowedTypes = (facility
+    ? FACILITY_RESOURCE_ACCESS[facility.type as keyof typeof FACILITY_RESOURCE_ACCESS] || []
+    : ['BLOOD', 'PPE', 'MEDICATION', 'MEDICAL_EQUIPMENT']) as readonly ResourceType[];
+
+  const filteredResourceTypes = RESOURCE_TYPES.filter(({ value }) =>
+    allowedTypes.includes(value)
+  );
+
+  // Set default resourceType once facility type is resolved
+  useEffect(() => {
+    if (facility && allowedTypes.length > 0 && !allowedTypes.includes(selectedType)) {
+      form.setValue('resourceType', allowedTypes[0] as ResourceType);
+    }
+  }, [facility, allowedTypes, selectedType, form]);
+
+  // Sync isMovable defaults based on resource type
+  useEffect(() => {
+    if (selectedType === 'MEDICAL_EQUIPMENT') {
+      form.setValue('isMovable', false);
+    } else {
+      form.setValue('isMovable', true);
+    }
+  }, [selectedType, form]);
+
   const onSubmit = async (data: CreateInventoryForm) => {
     const item = await createItem.mutateAsync({
       resourceType: data.resourceType as ResourceType,
       itemName: data.itemName,
       unit: data.unit as Parameters<typeof createItem.mutateAsync>[0]['unit'],
       metadata: buildMetadata(data),
+      price: data.price,
+      isMovable: data.isMovable,
     });
 
     // If opening stock was provided, record a RESTOCK movement immediately
@@ -495,7 +538,7 @@ export function CreateInventoryForm() {
               <FormItem>
                 <FormControl>
                   <div className="grid grid-cols-4 gap-3">
-                    {RESOURCE_TYPES.map(({ value, label, icon: Icon }) => (
+                    {filteredResourceTypes.map(({ value, label, icon: Icon }) => (
                       <button
                         key={value}
                         type="button"
@@ -505,6 +548,7 @@ export function CreateInventoryForm() {
                           selectedType === value
                             ? 'border-primary bg-primary/5 text-primary'
                             : 'border-border text-muted-foreground hover:border-muted-foreground/50'
+
                         )}
                       >
                         <Icon className="h-6 w-6" />
@@ -575,6 +619,57 @@ export function CreateInventoryForm() {
                           {u.charAt(0) + u.slice(1).toLowerCase()}
                         </SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Unit Price{' '}
+                    <span className="text-muted-foreground text-xs">
+                      (optional)
+                    </span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      placeholder="0.00"
+                      {...field}
+                      value={field.value ?? ''}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="isMovable"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Shareability</FormLabel>
+                  <Select
+                    onValueChange={(val) => field.onChange(val === 'true')}
+                    value={field.value ? 'true' : 'false'}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="true">Movable (Can be shared)</SelectItem>
+                      <SelectItem value="false">Immovable (Stationary)</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

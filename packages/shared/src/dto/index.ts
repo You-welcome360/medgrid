@@ -7,3 +7,6 @@ export * from './inventory';
 export * from './request';
 
 export * from './user';
+
+export * from './audit';
+

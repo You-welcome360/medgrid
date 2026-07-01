@@ -160,10 +160,13 @@ export interface InventoryItem {
   lowStockThreshold: number | null;
   reservedThreshold: number | null;
   metadata: Record<string, unknown>;
+  price?: number;
+  isMovable: boolean;
   createdById: string;
   createdAt: string;
   updatedAt: string;
 }
+
 
 export interface StockMovement {
   id: string;
@@ -224,3 +227,65 @@ export interface ResourceRequest {
   updatedAt: string;
   reservedThresholdWarning?: string | null;
 }
+
+// ============================================================
+// Audit Logs
+// ============================================================
+
+export interface AuditLog {
+  id: string;
+  actorId: string | null;
+  actorRole: string | null;
+  action: string;
+  entityType: string;
+  entityId: string;
+  facilityId: string | null;
+  previousValue: unknown | null;
+  newValue: unknown | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  createdAt: string;
+}
+
+export interface NetworkFacilityItem {
+  id: string;
+  facilityId: string;
+  resourceType: ResourceType;
+  itemName: string;
+  quantity: number;
+  unit: InventoryUnit;
+  price: number | null;
+  isMovable: boolean;
+  facility: {
+    name: string;
+    type: FacilityType;
+    phone: string;
+    email: string;
+    region: string;
+    district: string;
+    latitude: number;
+    longitude: number;
+  };
+}
+
+export interface AuditLogQuery {
+  page?: number;
+  limit?: number;
+  action?: string;
+  category?: string;
+  actorRole?: string;
+  facilityId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  search?: string;
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+

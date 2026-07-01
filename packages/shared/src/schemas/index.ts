@@ -9,3 +9,6 @@ export * from './facility';
 export * from './request';
 
 export * from './inventory';
+
+export * from './audit';
+

@@ -1,11 +1,12 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import { CreateFacilitySchema, createValidationError } from '@medgrid/shared';
+import { CreateFacilitySchema, UpdateFacilitySchema, createValidationError } from '@medgrid/shared';
 
 import {
   createFacilityInFacilityService,
   getAllFacilitiesFromFacilityService,
   getFacilityByIdFromFacilityService,
+  updateFacilityInFacilityService,
 } from '../../clients/facility';
 
 export const createFacilityController = async (
@@ -54,3 +55,24 @@ export const getFacilityByIdController = async (
     return next(error);
   }
 };
+
+export const updateFacilityController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params['id'] as string;
+    const result = UpdateFacilitySchema.safeParse(req.body);
+
+    if (!result.success) {
+      return next(createValidationError());
+    }
+
+    const response = await updateFacilityInFacilityService(id, result.data);
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+

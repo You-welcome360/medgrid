@@ -11,3 +11,10 @@ export const findFacilityById = async (id: string) => {
     where: { id },
   });
 };
+
+export const updateFacility = async (id: string, data: any) => {
+  return prisma.facility.update({
+    where: { id },
+    data,
+  });
+};

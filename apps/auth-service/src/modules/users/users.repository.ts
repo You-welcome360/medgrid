@@ -28,7 +28,7 @@ export const findUserByIdForManagement = async (id: string) => {
 export const createPendingUser = async (
   email: string,
   role: UserRole,
-  facilityId: string,
+  facilityId: string | null,
   createdById: string
 ) => {
   return prisma.user.create({
@@ -76,7 +76,7 @@ export const updateUserStatus = async (userId: string, status: UserStatus) => {
 
 export const createInvitation = async (
   userId: string,
-  facilityId: string,
+  facilityId: string | null,
   tokenHash: string,
   expiresAt: Date,
   createdById: string

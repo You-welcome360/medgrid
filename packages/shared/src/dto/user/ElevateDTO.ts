@@ -1,5 +1,6 @@
 export interface ElevateDTO {
   password: string;
 
-  targetFacilityId: string;
+  targetFacilityId?: string | null;
 }
+

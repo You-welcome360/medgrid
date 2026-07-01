@@ -10,6 +10,7 @@ import {
   createFacility,
   getAllFacilities,
   getFacilityById,
+  updateFacility,
 } from './facility.service';
 
 export const createFacilityController = async (
@@ -82,3 +83,26 @@ export const getFacilityByIdController = async (
     return next(error);
   }
 };
+
+export const updateFacilityController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params['id'] as string;
+    const facility = await updateFacility(id, req.body);
+
+    const response: ApiResponse<typeof facility> = {
+      success: true,
+      message: 'Facility updated successfully',
+      data: facility,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+

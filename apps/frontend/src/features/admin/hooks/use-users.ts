@@ -39,10 +39,12 @@ export function useInviteUser() {
     mutationFn: ({
       email,
       role,
+      elevatedToken,
     }: {
       email: string;
-      role: 'COORDINATION_MANAGER' | 'INVENTORY_MANAGER';
-    }) => usersApi.invite(email, role),
+      role: 'SUPER_ADMIN' | 'COORDINATION_MANAGER' | 'INVENTORY_MANAGER';
+      elevatedToken?: string;
+    }) => usersApi.invite(email, role, elevatedToken),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.all });
       toast.success('Invitation sent successfully');

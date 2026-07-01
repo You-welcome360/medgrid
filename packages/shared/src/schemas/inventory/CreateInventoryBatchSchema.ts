@@ -24,6 +24,10 @@ const BloodInventorySchema = z.object({
   unit: z.enum(InventoryUnit),
 
   metadata: BloodMetadataSchema,
+
+  price: z.number().min(0).optional(),
+
+  isMovable: z.boolean().optional(),
 });
 
 const MedicationInventorySchema = z.object({
@@ -34,6 +38,10 @@ const MedicationInventorySchema = z.object({
   unit: z.enum(InventoryUnit),
 
   metadata: MedicationMetadataSchema,
+
+  price: z.number().min(0).optional(),
+
+  isMovable: z.boolean().optional(),
 });
 
 const PPEInventorySchema = z.object({
@@ -44,6 +52,10 @@ const PPEInventorySchema = z.object({
   unit: z.enum(InventoryUnit),
 
   metadata: PPEMetadataSchema,
+
+  price: z.number().min(0).optional(),
+
+  isMovable: z.boolean().optional(),
 });
 
 const EquipmentInventorySchema = z.object({
@@ -54,7 +66,12 @@ const EquipmentInventorySchema = z.object({
   unit: z.enum(InventoryUnit),
 
   metadata: EquipmentMetadataSchema,
+
+  price: z.number().min(0).optional(),
+
+  isMovable: z.boolean().optional(),
 });
+
 
 export const CreateInventoryBatchSchema = z.discriminatedUnion('resourceType', [
   BloodInventorySchema,

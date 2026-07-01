@@ -24,11 +24,13 @@ const FacilityUsersPage = lazy(() => import('@/pages/users'));
 const NotificationsPage = lazy(() => import('@/pages/notifications'));
 const ReportsPage = lazy(() => import('@/pages/reports'));
 const SettingsPage = lazy(() => import('@/pages/settings'));
+const NetworkDirectoryPage = lazy(() => import('@/pages/network-directory'));
 
 // Super admin pages
 const AdminDashboardPage = lazy(() => import('@/pages/admin/dashboard'));
 const FacilityApprovalsPage = lazy(() => import('@/pages/admin/approvals'));
 const UsersPage = lazy(() => import('@/pages/admin/users'));
+const AdminAuditLogsPage = lazy(() => import('@/pages/admin/audit-logs'));
 
 const ADMIN_ROLES = ['SUPER_ADMIN'] as const;
 const FACILITY_ROLES = [
@@ -97,6 +99,14 @@ function AppRoutes() {
             element={
               <SuspenseWrapper>
                 <DashboardPage />
+              </SuspenseWrapper>
+            }
+          />
+          <Route
+            path="/network-directory"
+            element={
+              <SuspenseWrapper>
+                <NetworkDirectoryPage />
               </SuspenseWrapper>
             }
           />
@@ -190,6 +200,14 @@ function AppRoutes() {
             element={
               <SuspenseWrapper>
                 <UsersPage />
+              </SuspenseWrapper>
+            }
+          />
+          <Route
+            path="/admin/audit"
+            element={
+              <SuspenseWrapper>
+                <AdminAuditLogsPage />
               </SuspenseWrapper>
             }
           />

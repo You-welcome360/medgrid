@@ -31,12 +31,15 @@ async function request<T>(
 ): Promise<ApiResponse<T>> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string>),
   };
 
+  // Default to the global access token; explicit headers can override it
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
+
+  // Explicit per-call headers take precedence (e.g. elevated token)
+  Object.assign(headers, options.headers as Record<string, string>);
 
   const response = await fetch(`${BASE_URL}${path}`, {
     ...options,
@@ -56,16 +59,18 @@ async function request<T>(
 export const api = {
   get: <T>(path: string) => request<T>(path, { method: 'GET' }),
 
-  post: <T>(path: string, data?: unknown) =>
+  post: <T>(path: string, data?: unknown, headers?: Record<string, string>) =>
     request<T>(path, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
+      headers,
     }),
 
-  patch: <T>(path: string, data?: unknown) =>
+  patch: <T>(path: string, data?: unknown, headers?: Record<string, string>) =>
     request<T>(path, {
       method: 'PATCH',
       body: data ? JSON.stringify(data) : undefined,
+      headers,
     }),
 
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),

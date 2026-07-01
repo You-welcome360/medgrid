@@ -59,6 +59,8 @@ export function InventoryTable({ items, isLoading }: InventoryTableProps) {
             <TableHead>Item</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Quantity</TableHead>
+            <TableHead>Price</TableHead>
+            <TableHead>Shareability</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Threshold</TableHead>
             <TableHead className="w-16" />
@@ -92,6 +94,20 @@ export function InventoryTable({ items, isLoading }: InventoryTableProps) {
                   <span className="text-xs text-muted-foreground">
                     {item.unit.toLowerCase()}
                   </span>
+                </TableCell>
+                <TableCell className="text-sm">
+                  {item.price !== undefined && item.price !== null ? `$${item.price.toFixed(2)}` : '—'}
+                </TableCell>
+                <TableCell>
+                  {item.isMovable ? (
+                    <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/10">
+                      Movable
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center rounded-full bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10">
+                      Stationary
+                    </span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <InventoryStatusBadge status={item.status} />

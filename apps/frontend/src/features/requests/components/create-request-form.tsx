@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod/v3';
@@ -86,10 +86,20 @@ export function CreateRequestForm({ onSuccess }: CreateRequestFormProps) {
     (f) => f.id !== currentUser?.facilityId && f.status === 'ACTIVE'
   );
 
+  const { state } = useLocation() as {
+    state?: {
+      supplyingFacilityId?: string;
+      resourceType?: ResourceType;
+      itemName?: string;
+    };
+  };
+
   const form = useForm<CreateRequestForm>({
     resolver: zodResolver(schema),
     defaultValues: {
-      resourceType: 'BLOOD',
+      resourceType: state?.resourceType ?? 'BLOOD',
+      supplyingFacilityId: state?.supplyingFacilityId ?? '',
+      itemName: state?.itemName ?? '',
       priority: 'MEDIUM',
       unit: 'UNITS',
       quantity: 1,
@@ -135,8 +145,18 @@ export function CreateRequestForm({ onSuccess }: CreateRequestFormProps) {
     item.itemName.toLowerCase().includes((selectedItemName || '').toLowerCase())
   );
 
-  // Reset itemName and unit when facility or resource type changes
+  // Reset itemName and unit when facility or resource type changes, skipping pre-populated values on mount
+  const [initialFacility] = useState(state?.supplyingFacilityId ?? '');
+  const [initialResourceType] = useState(state?.resourceType ?? '');
+  const [isFirstRun, setIsFirstRun] = useState(true);
+
   useEffect(() => {
+    if (isFirstRun) {
+      setIsFirstRun(false);
+      if (selectedFacilityId === initialFacility && selectedType === initialResourceType) {
+        return;
+      }
+    }
     form.setValue('itemName', '');
     form.setValue('unit', 'UNITS');
   }, [selectedFacilityId, selectedType, form]);

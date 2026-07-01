@@ -21,6 +21,11 @@ export interface InventoryItemDTO {
 
   metadata: InventoryMetadata;
 
+  price?: number;
+
+  isMovable: boolean;
+
+
   createdById: string;
 
   createdAt: string;

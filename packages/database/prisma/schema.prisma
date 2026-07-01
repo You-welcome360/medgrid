@@ -409,6 +409,10 @@ model Inventory {
   /// Optional — when set, a warning fires if a request would bring stock below this level
   reservedThreshold Int?
 
+  price             Decimal?        @db.Decimal(10, 2)
+  isMovable         Boolean         @default(true)
+
+
   // ===========================================================================
   // Type-specific Metadata (discriminated by resourceType)
   // ===========================================================================
@@ -632,7 +636,7 @@ model UserInvitation {
   /// The pending user this invitation is for
   userId String @unique
 
-  facilityId String
+  facilityId String?
 
   // ===========================================================================
   // Token

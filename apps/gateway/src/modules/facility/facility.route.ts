@@ -7,6 +7,7 @@ import {
   createFacilityController,
   getAllFacilitiesController,
   getFacilityByIdController,
+  updateFacilityController,
 } from './facility.controller';
 
 export const facilityRouter = Router();
@@ -18,6 +19,9 @@ const canRead = requireRole(
   UserRole.INVENTORY_MANAGER
 );
 
+const canWrite = requireRole(UserRole.SUPER_ADMIN, UserRole.FACILITY_ADMIN);
+
 facilityRouter.get('/', canRead, getAllFacilitiesController);
 facilityRouter.get('/:id', canRead, getFacilityByIdController);
 facilityRouter.post('/', createFacilityController);
+facilityRouter.patch('/:id', canWrite, updateFacilityController);

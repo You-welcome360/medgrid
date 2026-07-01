@@ -13,6 +13,8 @@ import {
   getStockMovementsController,
   getActiveAlertsController,
   getAlertsByInventoryController,
+  getNetworkResourcesController,
+  getNetworkFacilitiesController,
 } from './inventory.controller';
 
 export const inventoryRouter = Router();
@@ -24,6 +26,8 @@ inventoryRouter.get('/', getInventoryController);
 // NOTE: static paths must come before /:id
 inventoryRouter.get('/alerts/active', getActiveAlertsController);
 inventoryRouter.get('/available', getAvailableInventoryController);
+inventoryRouter.get('/network/resources', getNetworkResourcesController);
+inventoryRouter.get('/network/facilities', getNetworkFacilitiesController);
 
 inventoryRouter.get('/:id', getInventoryItemController);
 inventoryRouter.patch('/:id/status', updateInventoryStatusController);

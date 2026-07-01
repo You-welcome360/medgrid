@@ -1,8 +1,10 @@
-import { writeAuditLog, AuditAction } from '@medgrid/database';
+import { writeAuditLog, AuditAction, prisma } from '@medgrid/database';
 import {
   createNotFoundError,
   createAuthorizationError,
   createConflictError,
+  createValidationError,
+  FACILITY_RESOURCE_ACCESS,
   type CreateInventoryBatchDTO,
   type CreateStockMovementDTO,
   type InventoryItemDTO,
@@ -33,6 +35,8 @@ import {
   resolveAlert,
   findActiveAlertsByFacility,
   findAlertsByInventory,
+  findNetworkResources,
+  findFacilitiesByResource,
 } from './inventory.repository';
 
 // ===========================================================================
@@ -58,10 +62,13 @@ const toInventoryItemDTO = async (
     status: item.status as unknown as InventoryStatus,
     lowStockThreshold: item.lowStockThreshold,
     metadata: item.metadata as InventoryItemDTO['metadata'],
+    price: item.price ? item.price.toNumber() : undefined,
+    isMovable: item.isMovable,
     createdById: item.createdById,
     createdAt: item.createdAt.toISOString(),
     updatedAt: item.updatedAt.toISOString(),
   };
+
 };
 
 const toStockMovementDTO = (
@@ -147,7 +154,23 @@ export const createInventory = async (
     );
   }
 
+  const facility = await prisma.facility.findUnique({
+    where: { id: facilityId },
+  });
+
+  if (!facility) {
+    throw createNotFoundError('Facility not found');
+  }
+
+  const allowedResources = FACILITY_RESOURCE_ACCESS[facility.type as keyof typeof FACILITY_RESOURCE_ACCESS];
+  if (!allowedResources || !allowedResources.includes(data.resourceType as unknown as ResourceType)) {
+    throw createValidationError(
+      `Facility of type ${facility.type} is not authorized to manage resource type ${data.resourceType}`
+    );
+  }
+
   const item = await createInventoryItem(data, facilityId, performedById);
+
 
   await writeAuditLog({
     actorId: performedById,
@@ -441,3 +464,32 @@ export const getAvailableInventoryForFacility = async (
   );
   return Promise.all(items.map(toInventoryItemDTO));
 };
+
+export const getNetworkResources = async () => {
+  return findNetworkResources();
+};
+
+export const getResourceFacilities = async (
+  resourceType: ResourceType,
+  itemName?: string
+) => {
+  const items = await findFacilitiesByResource(resourceType, itemName);
+  return Promise.all(
+    items.map(async (item) => {
+      const quantity = await deriveCurrentQuantity(item.id);
+      return {
+        id: item.id,
+        facilityId: item.facilityId,
+        itemName: item.itemName,
+        resourceType: item.resourceType as unknown as ResourceType,
+        unit: item.unit as unknown as InventoryItemDTO['unit'],
+        status: item.status as unknown as InventoryStatus,
+        quantity,
+        price: item.price ? item.price.toNumber() : undefined,
+        isMovable: item.isMovable,
+        facility: item.facility,
+      };
+    })
+  );
+};
+
