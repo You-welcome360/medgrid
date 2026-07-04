@@ -8,6 +8,10 @@ import {
   getAllFacilitiesController,
   getFacilityByIdController,
   updateFacilityController,
+  getFacilityBalanceController,
+  initializeFacilityTopUpController,
+  getFacilityBalanceHistoryController,
+  paystackWebhookController,
 } from './facility.controller';
 
 export const facilityRouter = Router();
@@ -22,6 +26,12 @@ const canRead = requireRole(
 const canWrite = requireRole(UserRole.SUPER_ADMIN, UserRole.FACILITY_ADMIN);
 
 facilityRouter.get('/', canRead, getAllFacilitiesController);
+
+facilityRouter.get('/balance', canRead, getFacilityBalanceController);
+facilityRouter.post('/balance/top-up', canRead, initializeFacilityTopUpController);
+facilityRouter.get('/balance/history', canRead, getFacilityBalanceHistoryController);
+facilityRouter.post('/webhooks/paystack', paystackWebhookController);
+
 facilityRouter.get('/:id', canRead, getFacilityByIdController);
 facilityRouter.post('/', createFacilityController);
 facilityRouter.patch('/:id', canWrite, updateFacilityController);

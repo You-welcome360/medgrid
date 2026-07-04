@@ -270,3 +270,27 @@ export const getNetworkFacilitiesFromFacilityService = async (
   return response.json() as Promise<ApiResponse<unknown[]>>;
 };
 
+export const updateInventoryPriceInFacilityService = async (
+  id: string,
+  price: number,
+  headers: InventoryHeaders
+): Promise<ApiResponse<any>> => {
+  const response = await fetch(`${base()}/${id}/price`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: headers.authorizationHeader ?? '',
+      'x-facility-id': headers.facilityId,
+      'x-user-id': headers.userId,
+    },
+    body: JSON.stringify({ price }),
+  });
+
+  if (!response.ok) {
+    const err = (await response.json().catch(() => ({}))) as any;
+    throw new Error(err.message || 'Failed to update inventory price');
+  }
+
+  return response.json() as Promise<ApiResponse<any>>;
+};
+

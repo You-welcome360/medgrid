@@ -12,4 +12,6 @@ export enum RequestStatus {
   REJECTED = 'REJECTED',
 
   FAILED = 'FAILED',
+
+  EXPIRED = 'EXPIRED',
 }

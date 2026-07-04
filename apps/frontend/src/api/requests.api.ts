@@ -17,7 +17,7 @@ export const requestsApi = {
   get: (id: string) => api.get<ResourceRequest>(`/requests/${id}`),
 
   create: (data: {
-    supplyingFacilityId: string;
+    supplyingFacilityId?: string;
     resourceType: ResourceType;
     itemName: string;
     quantity: number;
@@ -25,6 +25,9 @@ export const requestsApi = {
     priority: RequestPriority;
     description: string;
     patient?: PatientInfo;
+    isEmergency?: boolean;
+    isBroadcast?: boolean;
+    maxRadiusKm?: number;
   }) => api.post<ResourceRequest>('/requests', data),
 
   accept: (id: string) => api.post<ResourceRequest>(`/requests/${id}/accept`),
@@ -41,4 +44,15 @@ export const requestsApi = {
     api.post<ResourceRequest>(`/requests/${id}/cancel`, { reason }),
 
   fail: (id: string) => api.post<ResourceRequest>(`/requests/${id}/fail`),
+
+  listBroadcasts: (ignoreRadius?: boolean) => {
+    const qs = ignoreRadius ? '?ignoreRadius=true' : '';
+    return api.get<ResourceRequest[]>(`/requests/broadcasts${qs}`);
+  },
+
+  acceptBroadcast: (id: string) =>
+    api.post<ResourceRequest>(`/requests/${id}/accept-broadcast`),
+
+  declineBroadcast: (id: string) =>
+    api.post<null>(`/requests/${id}/decline-broadcast`),
 };

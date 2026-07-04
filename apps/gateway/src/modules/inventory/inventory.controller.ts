@@ -24,6 +24,7 @@ import {
   getAlertsByInventoryFromFacilityService,
   getNetworkResourcesFromFacilityService,
   getNetworkFacilitiesFromFacilityService,
+  updateInventoryPriceInFacilityService,
 } from '../../clients/facility';
 
 // ===========================================================================
@@ -352,6 +353,31 @@ export const getNetworkFacilitiesController = async (
     const response = await getNetworkFacilitiesFromFacilityService(
       resourceType,
       itemName,
+      getInventoryHeaders(req, res)
+    );
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const setPriceController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params['id'] as string;
+    const { price } = req.body;
+
+    if (price === undefined || price === null || isNaN(Number(price)) || Number(price) < 0) {
+      return next(createValidationError('Price must be a non-negative number'));
+    }
+
+    const response = await updateInventoryPriceInFacilityService(
+      id,
+      Number(price),
       getInventoryHeaders(req, res)
     );
 

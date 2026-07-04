@@ -17,7 +17,11 @@ export const createApp = () => {
     })
   );
 
-  app.use(express.json());
+  app.use(express.json({
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf;
+    }
+  }));
 
   app.use('/health', healthRouter);
   app.use('/internal', internalRouter);

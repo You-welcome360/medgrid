@@ -50,6 +50,20 @@ export interface ResourceRequestDTO {
 
   updatedAt: string;
 
+  isEmergency: boolean;
+
+  isBroadcast: boolean;
+
+  maxRadiusKm: number | null;
+
+  declinedBy: string[];
+
   /// Present only when accepting a request would breach the supplier's reserved threshold
   reservedThresholdWarning?: string | null;
+
+  pricePerUnit?: number | null;
+  totalAmount?: number | null;
+  paymentStatus?: string | null;
+  transactionId?: string | null;
+  expiresAt: string | null;
 }

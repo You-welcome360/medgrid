@@ -22,6 +22,7 @@ import {
   deleteInventory,
   updateThreshold,
   updateReservedThreshold,
+  updateInventoryPrice,
   recordStockMovement,
   getStockMovements,
   getActiveAlerts,
@@ -469,6 +470,34 @@ export const getNetworkFacilitiesController = async (
       success: true,
       message: 'Resource facilities retrieved successfully',
       data: facilities,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const setPriceController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params.id as string;
+    const { price } = req.body;
+
+    if (price === undefined || price === null || isNaN(Number(price)) || Number(price) < 0) {
+      return next(createValidationError('Price must be a non-negative number'));
+    }
+
+    const item = await updateInventoryPrice(id, Number(price));
+
+    const response: ApiResponse<any> = {
+      success: true,
+      message: 'Inventory price updated successfully',
+      data: item,
       timestamp: new Date().toISOString(),
     };
 

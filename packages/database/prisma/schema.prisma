@@ -86,6 +86,7 @@ enum RequestStatus {
   CANCELLED
   REJECTED
   FAILED
+  EXPIRED
 }
 
 enum RequestPriority {
@@ -94,6 +95,23 @@ enum RequestPriority {
   HIGH
   CRITICAL
 }
+
+enum NotificationType {
+  REQUEST_CREATED
+  REQUEST_ACKNOWLEDGED
+  REQUEST_FULFILLED
+  REQUEST_CANCELED
+  REQUEST_EXPIRED
+  BALANCE_LOW
+  BALANCE_TOPUP
+}
+
+enum NotificationChannel {
+  WEBSOCKET
+  PUSH
+  EMAIL
+}
+
 
 enum AuditAction {
   // Auth
@@ -203,6 +221,9 @@ model User {
 
   createdUsers User[] @relation("UserCreator")
 
+  notifications               Notification[]
+  notificationPreferences     UserNotificationPreference[]
+
   @@index([facilityId])
   @@index([role])
   @@index([status])
@@ -243,6 +264,9 @@ model Facility {
   longitude Float
 
   // ===========================================================================
+  balance  Decimal @default(0.00) @db.Decimal(10, 2)
+
+  // ===========================================================================
   // Relationships
   // ===========================================================================
 
@@ -250,6 +274,8 @@ model Facility {
   inventories Inventory[]
   outgoingRequests ResourceRequest[] @relation("RequestingFacility")
   incomingRequests ResourceRequest[] @relation("SupplyingFacility")
+  balanceTransactions BalanceTransaction[]
+  notifications       Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -582,6 +608,16 @@ model ResourceRequest {
 
   description String @db.VarChar(1000)
 
+  isEmergency Boolean @default(false)
+  isBroadcast Boolean @default(false)
+  maxRadiusKm Int?    @default(50)
+  declinedBy  String[]
+
+  pricePerUnit   Decimal?        @db.Decimal(10, 2)
+  totalAmount    Decimal?        @db.Decimal(10, 2)
+  paymentStatus  String          @default("paid")
+  transactionId  String?
+
   /// Optional patient context (stored as JSON snapshot)
   patient Json?
 
@@ -601,6 +637,7 @@ model ResourceRequest {
   acceptedAt   DateTime?
   dispatchedAt DateTime?
   completedAt  DateTime?
+  expiresAt    DateTime?
 
   // ===========================================================================
   // Audit Metadata
@@ -660,4 +697,61 @@ model UserInvitation {
 
   @@index([userId])
   @@index([facilityId])
+}
+
+model BalanceTransaction {
+  id            String   @id @default(uuid())
+  facilityId    String
+  amount        Decimal  @db.Decimal(10, 2)
+  type          String
+  reference     String?
+  paymentMethod String
+  status        String
+  description   String?
+  createdAt     DateTime @default(now())
+
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@index([facilityId])
+  @@index([type])
+  @@index([status])
+}
+
+model Notification {
+  id         String              @id @default(uuid())
+  userId     String
+  facilityId String
+  type       NotificationType
+  channel    NotificationChannel
+  title      String
+  body       String
+  data       Json?
+
+  readAt      DateTime?
+  deliveredAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([facilityId])
+  @@index([type])
+  @@index([readAt])
+}
+
+model UserNotificationPreference {
+  id            String              @id @default(uuid())
+  userId        String
+  channel       NotificationChannel
+  enabled       Boolean             @default(true)
+  emergencyOnly Boolean             @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, channel])
+  @@index([userId])
 }

@@ -120,6 +120,20 @@ export function useSetReservedThreshold() {
   });
 }
 
+export function useUpdatePrice() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, price }: { id: string; price: number }) =>
+      inventoryApi.updatePrice(id, price),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEYS.all });
+      toast.success('Unit price updated');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
 export function useDeleteInventoryItem() {
   const qc = useQueryClient();
 

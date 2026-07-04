@@ -17,7 +17,7 @@ const RequestDescriptionSchema = z
   .max(VALIDATION.DESCRIPTION.MAX_LENGTH);
 
 export const CreateRequestSchema = z.object({
-  supplyingFacilityId: z.string().uuid(),
+  supplyingFacilityId: z.string().uuid().optional(),
 
   resourceType: z.enum(ResourceType),
 
@@ -32,4 +32,22 @@ export const CreateRequestSchema = z.object({
   description: RequestDescriptionSchema,
 
   patient: PatientInfoSchema.optional(),
+
+  isEmergency: z.boolean().optional(),
+
+  isBroadcast: z.boolean().optional(),
+
+  maxRadiusKm: z.number().int().positive().optional(),
+
+  pricePerUnit: z.number().positive().optional(),
+
+  expiresAt: z.string().datetime().optional(),
+}).refine(data => {
+  if (!data.isBroadcast && !data.supplyingFacilityId) {
+    return false;
+  }
+  return true;
+}, {
+  message: "supplyingFacilityId is required when request is not a broadcast",
+  path: ["supplyingFacilityId"]
 });

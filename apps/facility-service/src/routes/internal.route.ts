@@ -6,10 +6,12 @@ import {
   createNotFoundError,
   type ApiResponse,
   StockMovementType,
+  InventoryStatus,
 } from '@medgrid/shared';
 
 import {
   findInventoryByName,
+  findInventoryByFacility,
   createStockMovement,
   deriveCurrentQuantity,
   createInventoryItem,
@@ -56,6 +58,8 @@ internalRouter.get(
         metadata: unknown;
         currentStock: number;
         reservedThreshold: number | null;
+        isMovable: boolean;
+        price?: number;
       }> = {
         success: true,
         message: 'Inventory item found',
@@ -68,7 +72,54 @@ internalRouter.get(
           metadata: item.metadata,
           currentStock,
           reservedThreshold: item.reservedThreshold,
+          isMovable: item.isMovable,
+          price: item.price ? Number(item.price) : undefined,
         },
+        timestamp: new Date().toISOString(),
+      };
+
+      return res.status(200).json(response);
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
+
+/**
+ * GET /internal/inventory/summary
+ * Returns all available + movable inventory items for a facility with current stock.
+ * Used by the coordination service to filter SOS broadcasts by the supplier's real inventory.
+ */
+internalRouter.get(
+  '/inventory/summary',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { facilityId } = req.query as { facilityId: string };
+
+      if (!facilityId) {
+        return res.status(400).json({ success: false, message: 'facilityId is required' });
+      }
+
+      const items = await findInventoryByFacility(facilityId, undefined, InventoryStatus.AVAILABLE);
+
+      // Resolve current stock for each item in parallel
+      const summary = await Promise.all(
+        items.map(async (item) => {
+          const currentStock = await deriveCurrentQuantity(item.id);
+          return {
+            inventoryId: item.id,
+            itemName: item.itemName,
+            resourceType: item.resourceType as string,
+            currentStock,
+            isMovable: item.isMovable,
+          };
+        })
+      );
+
+      const response: ApiResponse<typeof summary> = {
+        success: true,
+        message: 'Inventory summary retrieved',
+        data: summary,
         timestamp: new Date().toISOString(),
       };
 

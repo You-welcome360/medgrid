@@ -15,3 +15,6 @@ export * from './BloodGroup';
 export * from './InventoryStatus';
 export * from './InventoryUnit';
 export * from './StockMovementType';
+export * from './NotificationType';
+export * from './NotificationChannel';
+

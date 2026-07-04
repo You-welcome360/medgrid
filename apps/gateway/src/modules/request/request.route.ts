@@ -14,6 +14,9 @@ import {
   confirmReceiptController,
   cancelRequestController,
   markFailedController,
+  getBroadcastsController,
+  claimBroadcastController,
+  declineBroadcastController,
 } from './request.controller';
 
 export const requestRouter = Router();
@@ -47,8 +50,16 @@ const canRead = requireRole(
   UserRole.INVENTORY_MANAGER
 );
 
+// Claim/decline broadcasts: FACILITY_ADMIN, COORDINATION_MANAGER, or INVENTORY_MANAGER
+const claimAction = requireRole(
+  UserRole.FACILITY_ADMIN,
+  UserRole.COORDINATION_MANAGER,
+  UserRole.INVENTORY_MANAGER
+);
+
 requestRouter.post('/', canCreate, createRequestController);
 requestRouter.get('/', canRead, getRequestsController);
+requestRouter.get('/broadcasts', canRead, getBroadcastsController);
 requestRouter.get('/:id', canRead, getRequestByIdController);
 
 requestRouter.post('/:id/accept', supplierAction, acceptRequestController);
@@ -57,3 +68,5 @@ requestRouter.post('/:id/dispatch', dispatchAction, dispatchRequestController);
 requestRouter.post('/:id/confirm', confirmAction, confirmReceiptController);
 requestRouter.post('/:id/cancel', canCreate, cancelRequestController);
 requestRouter.post('/:id/fail', dispatchAction, markFailedController);
+requestRouter.post('/:id/accept-broadcast', claimAction, claimBroadcastController);
+requestRouter.post('/:id/decline-broadcast', claimAction, declineBroadcastController);

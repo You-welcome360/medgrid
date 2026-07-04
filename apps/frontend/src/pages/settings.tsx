@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFacility } from '@/features/facilities/hooks/use-facilities';
 import { facilitiesApi } from '@/api/facilities.api';
+import { useNotificationPreferences, useUpdatePreferences } from '@/hooks/use-notifications';
 
 import { authApi } from '@/api/auth.api';
 import { useAuthStore } from '@/stores/auth.store';
@@ -501,6 +502,139 @@ function FacilityProfileSection() {
 }
 
 // ============================================================
+// Notification preferences section
+// ============================================================
+
+function NotificationPreferencesSection() {
+  const { data: prefs, isLoading, error } = useNotificationPreferences();
+  const updateMutation = useUpdatePreferences();
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Notification Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="h-10 bg-slate-800/50 animate-pulse rounded" />
+          <div className="h-10 bg-slate-800/50 animate-pulse rounded" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error || !prefs) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Notification Settings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-red-400">Failed to load notification settings.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const handleToggle = (channel: 'push' | 'email', field: 'enabled' | 'emergencyOnly') => {
+    const pushVal = { ...prefs.push };
+    const emailVal = { ...prefs.email };
+
+    if (channel === 'push') {
+      pushVal[field] = !pushVal[field];
+    } else {
+      emailVal[field] = !emailVal[field];
+    }
+
+    updateMutation.mutate({ push: pushVal, email: emailVal });
+  };
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base">Notification Channels</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="space-y-4">
+          
+          {/* Websocket */}
+          <div className="flex items-start justify-between p-3 rounded-lg bg-slate-950/40 border border-slate-900">
+            <div className="space-y-0.5">
+              <label className="text-sm font-semibold text-white">In-App Live Stream</label>
+              <p className="text-xs text-gray-400">Real-time alerts displayed instantly on screen</p>
+            </div>
+            <span className="text-[10px] uppercase font-bold text-indigo-400 px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">
+              Always On
+            </span>
+          </div>
+
+          {/* Email */}
+          <div className="space-y-3 p-3 rounded-lg border border-slate-800 bg-slate-900/10">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <label className="text-sm font-semibold text-white">Email Messages</label>
+                <p className="text-xs text-gray-400">Receive summaries and requests via mail</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={prefs.email.enabled}
+                onChange={() => handleToggle('email', 'enabled')}
+                className="h-4 w-4 rounded border-slate-800 text-indigo-600 bg-slate-950 accent-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
+              />
+            </div>
+            {prefs.email.enabled && (
+              <div className="flex items-center justify-between pl-4 border-l border-slate-800 pt-2">
+                <div className="space-y-0.5">
+                  <label className="text-xs font-medium text-gray-300">Only Emergency Announcements</label>
+                  <p className="text-[10px] text-gray-500">Mute normal notifications, alert only on emergency alerts</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={prefs.email.emergencyOnly}
+                  onChange={() => handleToggle('email', 'emergencyOnly')}
+                  className="h-3.5 w-3.5 rounded border-slate-800 text-indigo-600 bg-slate-950 accent-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Push Notifications */}
+          <div className="space-y-3 p-3 rounded-lg border border-slate-800 bg-slate-900/10">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <label className="text-sm font-semibold text-white">Push Notifications</label>
+                <p className="text-xs text-gray-400">Receive native browser alerts for critical events</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={prefs.push.enabled}
+                onChange={() => handleToggle('push', 'enabled')}
+                className="h-4 w-4 rounded border-slate-800 text-indigo-600 bg-slate-950 accent-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
+              />
+            </div>
+            {prefs.push.enabled && (
+              <div className="flex items-center justify-between pl-4 border-l border-slate-800 pt-2">
+                <div className="space-y-0.5">
+                  <label className="text-xs font-medium text-gray-300">Only Emergency Announcements</label>
+                  <p className="text-[10px] text-gray-500">Mute normal notifications, alert only on emergency alerts</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={prefs.push.emergencyOnly}
+                  onChange={() => handleToggle('push', 'emergencyOnly')}
+                  className="h-3.5 w-3.5 rounded border-slate-800 text-indigo-600 bg-slate-950 accent-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
+                />
+              </div>
+            )}
+          </div>
+
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================
 // Page
 // ============================================================
 
@@ -511,6 +645,7 @@ export default function SettingsPage() {
       <AccountSection />
       <FacilityProfileSection />
       <AppearanceSection />
+      <NotificationPreferencesSection />
       <ChangePasswordSection />
     </div>
   );

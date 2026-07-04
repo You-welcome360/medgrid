@@ -29,6 +29,13 @@ export const createResourceRequest = async (
       unit: data.unit as InventoryUnit,
       priority: data.priority as RequestPriority,
       description: data.description,
+      isEmergency: data.isEmergency ?? false,
+      isBroadcast: data.isBroadcast ?? false,
+      maxRadiusKm: data.maxRadiusKm ?? null,
+      pricePerUnit: data.pricePerUnit ?? null,
+      totalAmount: data.pricePerUnit ? (data.pricePerUnit * data.quantity) : null,
+      paymentStatus: 'paid',
+      expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
       patient: data.patient
         ? (data.patient as unknown as Prisma.InputJsonValue)
         : Prisma.JsonNull,
@@ -136,6 +143,80 @@ export const failRequest = async (id: string, handledById: string) => {
     data: {
       status: RequestStatus.FAILED,
       handledById,
+    },
+  });
+};
+
+export const findNearbyBroadcasts = async (
+  facilityId: string,
+  facilityLat: number,
+  facilityLng: number,
+  ignoreRadius: boolean = false
+) => {
+  return prisma.$queryRaw<any[]>(Prisma.sql`
+    SELECT 
+      r.*,
+      f.name as "requestingFacilityName",
+      f.type as "requestingFacilityType",
+      f.phone as "requestingFacilityPhone",
+      f.email as "requestingFacilityEmail",
+      f.region as "requestingFacilityRegion",
+      f.district as "requestingFacilityDistrict",
+      (
+        6371 * acos(
+          cos(radians(${facilityLat})) * 
+          cos(radians(f.latitude)) * 
+          cos(radians(f.longitude) - radians(${facilityLng})) + 
+          sin(radians(${facilityLat})) * 
+          sin(radians(f.latitude))
+        )
+      ) AS distance
+    FROM "ResourceRequest" r
+    JOIN "Facility" f ON r."requestingFacilityId" = f.id
+    WHERE r."isBroadcast" = true
+      AND r.status::text = 'PENDING'
+      AND r."requestingFacilityId" <> ${facilityId}
+      AND (r."declinedBy" IS NULL OR NOT (${facilityId} = ANY(r."declinedBy")))
+      AND (
+        ${ignoreRadius} = true OR
+        (r."maxRadiusKm" IS NULL) OR 
+        (
+          6371 * acos(
+            cos(radians(${facilityLat})) * 
+            cos(radians(f.latitude)) * 
+            cos(radians(f.longitude) - radians(${facilityLng})) + 
+            sin(radians(${facilityLat})) * 
+            sin(radians(f.latitude))
+          ) <= r."maxRadiusKm"
+        )
+      )
+    ORDER BY distance ASC
+  `);
+};
+
+export const acceptBroadcastRequest = async (
+  id: string,
+  supplyingFacilityId: string,
+  handledById: string
+) => {
+  return prisma.resourceRequest.update({
+    where: { id },
+    data: {
+      supplyingFacilityId,
+      status: RequestStatus.ACCEPTED,
+      handledById,
+      acceptedAt: new Date(),
+    },
+  });
+};
+
+export const declineBroadcastRequest = async (id: string, facilityId: string) => {
+  return prisma.resourceRequest.update({
+    where: { id },
+    data: {
+      declinedBy: {
+        push: facilityId,
+      },
     },
   });
 };

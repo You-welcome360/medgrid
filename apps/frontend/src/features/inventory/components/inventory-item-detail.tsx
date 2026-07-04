@@ -8,6 +8,7 @@ import {
   useUpdateInventoryStatus,
   useSetThreshold,
   useSetReservedThreshold,
+  useUpdatePrice,
   useDeleteInventoryItem,
 } from '@/features/inventory/hooks/use-inventory';
 import { RecordMovementDialog } from './record-movement-dialog';
@@ -58,6 +59,7 @@ export function InventoryItemDetail({ id }: InventoryItemDetailProps) {
   const updateStatus = useUpdateInventoryStatus();
   const setThreshold = useSetThreshold();
   const setReservedThreshold = useSetReservedThreshold();
+  const updatePrice = useUpdatePrice();
   const deleteItem = useDeleteInventoryItem();
 
   if (isLoading) {
@@ -180,7 +182,7 @@ export function InventoryItemDetail({ id }: InventoryItemDetailProps) {
                 <div className="flex justify-between border-b pb-1">
                   <span className="text-muted-foreground">Unit Price</span>
                   <span className="font-medium">
-                    {item.price !== undefined && item.price !== null ? `$${item.price.toFixed(2)}` : '—'}
+                    {item.price !== undefined && item.price !== null ? `GH₵${item.price.toFixed(2)}` : '—'}
                   </span>
                 </div>
                 <div className="flex justify-between border-b pb-1">
@@ -196,8 +198,8 @@ export function InventoryItemDetail({ id }: InventoryItemDetailProps) {
               </div>
             </div>
 
-            {/* Threshold controls — 2 columns */}
-            <div className="sm:col-span-3 grid grid-cols-2 gap-4">
+            {/* Threshold controls — 3 columns */}
+            <div className="sm:col-span-3 grid grid-cols-3 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">
                   Low Stock Threshold
@@ -245,6 +247,32 @@ export function InventoryItemDetail({ id }: InventoryItemDetailProps) {
                     placeholder="None"
                   />
                   <span className="text-xs text-muted-foreground">units</span>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  Unit Price (GHS)
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Cost per unit charged to other facilities
+                </p>
+                <div className="mt-2 flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    defaultValue={item.price ?? ''}
+                    className="flex h-9 w-24 rounded-md border border-input bg-background px-3 py-1 text-sm"
+                    onBlur={(e) => {
+                      const val = parseFloat(e.target.value);
+                      if (!isNaN(val) && val >= 0) {
+                        updatePrice.mutate({ id, price: val });
+                      }
+                    }}
+                    placeholder="None"
+                  />
+                  <span className="text-xs text-muted-foreground">GH₵</span>
                 </div>
               </div>
             </div>

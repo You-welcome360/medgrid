@@ -3,7 +3,7 @@ import { InventoryUnit, RequestPriority, ResourceType } from '../../enums';
 import { PatientInfo } from '../../types';
 
 export interface CreateRequestDTO {
-  supplyingFacilityId: string;
+  supplyingFacilityId?: string;
 
   resourceType: ResourceType;
 
@@ -18,4 +18,14 @@ export interface CreateRequestDTO {
   description: string;
 
   patient?: PatientInfo;
+
+  isEmergency?: boolean;
+
+  isBroadcast?: boolean;
+
+  maxRadiusKm?: number;
+
+  pricePerUnit?: number;
+
+  expiresAt?: string;
 }

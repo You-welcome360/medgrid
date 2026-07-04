@@ -9,10 +9,12 @@
   },
   "dependencies": {
     "@medgrid/shared": "workspace:*",
+    "@medgrid/database": "workspace:*",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "express-rate-limit": "^8.5.2"
+    "express-rate-limit": "^8.5.2",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@medgrid/tsconfig": "workspace:*",

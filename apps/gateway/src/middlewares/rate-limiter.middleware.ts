@@ -11,6 +11,7 @@ export const loginRateLimiter = rateLimit({
 
   standardHeaders: true,
   legacyHeaders: false,
+  validate: false,
 
   keyGenerator: (req) => {
     // Rate limit based on IP or email body key if present

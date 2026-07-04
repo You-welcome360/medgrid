@@ -51,6 +51,9 @@ export const inventoryApi = {
       threshold,
     }),
 
+  updatePrice: (id: string, price: number) =>
+    api.patch<InventoryItem>(`/inventory/${id}/price`, { price }),
+
   delete: (id: string) => api.delete<null>(`/inventory/${id}`),
 
   getMovements: (id: string) =>

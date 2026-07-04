@@ -493,3 +493,14 @@ export const getResourceFacilities = async (
   );
 };
 
+export const updateInventoryPrice = async (
+  id: string,
+  price: number
+): Promise<InventoryItemDTO> => {
+  const item = await prisma.inventory.update({
+    where: { id },
+    data: { price },
+  });
+  return toInventoryItemDTO(item);
+};
+

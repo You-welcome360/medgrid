@@ -9,6 +9,7 @@ const KEYS = {
   all: ['requests'] as const,
   list: (status?: RequestStatus) => ['requests', 'list', status] as const,
   detail: (id: string) => ['requests', id] as const,
+  broadcasts: ['requests', 'broadcasts'] as const,
 };
 
 export function useAvailableInventory(
@@ -132,5 +133,40 @@ export function useFailRequest() {
       toast.success('Request marked as failed');
     },
     onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useBroadcasts(ignoreRadius: boolean = false) {
+  return useQuery({
+    queryKey: [...KEYS.broadcasts, { ignoreRadius }],
+    queryFn: () => requestsApi.listBroadcasts(ignoreRadius),
+    select: (res) => res.data ?? [],
+    refetchInterval: 15000,
+  });
+}
+
+export function useAcceptBroadcast() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => requestsApi.acceptBroadcast(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEYS.all });
+      toast.success('SOS Broadcast claimed and accepted successfully!');
+    },
+    onError: (err: Error) => toast.error(err.message || 'Failed to claim broadcast'),
+  });
+}
+
+export function useDeclineBroadcast() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => requestsApi.declineBroadcast(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEYS.all });
+      toast.success('Broadcast dismissed from your view');
+    },
+    onError: (err: Error) => toast.error(err.message || 'Failed to decline broadcast'),
   });
 }

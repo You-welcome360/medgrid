@@ -73,6 +73,13 @@ export const api = {
       headers,
     }),
 
+  put: <T>(path: string, data?: unknown, headers?: Record<string, string>) =>
+    request<T>(path, {
+      method: 'PUT',
+      body: data ? JSON.stringify(data) : undefined,
+      headers,
+    }),
+
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 };
 

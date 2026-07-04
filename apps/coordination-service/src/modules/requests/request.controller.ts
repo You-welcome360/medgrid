@@ -20,6 +20,9 @@ import {
   confirmReceipt,
   cancel,
   markFailed,
+  getBroadcastsForFacility,
+  claimBroadcast,
+  declineBroadcast,
 } from './request.service';
 
 // ===========================================================================
@@ -280,6 +283,73 @@ export const markFailedController = async (
       success: true,
       message: 'Request marked as failed',
       data: request,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getBroadcastsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const ignoreRadius = req.query['ignoreRadius'] === 'true';
+    const broadcasts = await getBroadcastsForFacility(getFacilityId(req), ignoreRadius);
+
+    const response: ApiResponse<ResourceRequestDTO[]> = {
+      success: true,
+      message: 'Active broadcasts retrieved successfully',
+      data: broadcasts,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const claimBroadcastController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params['id'] as string;
+    const result = await claimBroadcast(id, getFacilityId(req), getUserId(req));
+
+    const response: ApiResponse<ResourceRequestDTO> = {
+      success: true,
+      message: result.reservedThresholdWarning
+        ? `Broadcast claimed. ⚠️ ${result.reservedThresholdWarning}`
+        : 'Broadcast claimed successfully',
+      data: result,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const declineBroadcastController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params['id'] as string;
+    await declineBroadcast(id, getFacilityId(req));
+
+    const response: ApiResponse<null> = {
+      success: true,
+      message: 'Broadcast request declined',
       timestamp: new Date().toISOString(),
     };
 

@@ -7,6 +7,10 @@ import {
   getAllFacilitiesFromFacilityService,
   getFacilityByIdFromFacilityService,
   updateFacilityInFacilityService,
+  getFacilityBalanceFromFacilityService,
+  initializeFacilityTopUpInFacilityService,
+  getFacilityBalanceHistoryFromFacilityService,
+  relayPaystackWebhookToFacilityService,
 } from '../../clients/facility';
 
 export const createFacilityController = async (
@@ -70,6 +74,78 @@ export const updateFacilityController = async (
     }
 
     const response = await updateFacilityInFacilityService(id, result.data);
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getFacilityBalanceController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = res.locals.user;
+    const facilityId = user?.facilityId;
+    if (!facilityId) {
+      return res.status(400).json({ success: false, message: 'Facility ID is required' });
+    }
+    const response = await getFacilityBalanceFromFacilityService(facilityId);
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const initializeFacilityTopUpController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = res.locals.user;
+    const facilityId = user?.facilityId;
+    if (!facilityId) {
+      return res.status(400).json({ success: false, message: 'Facility ID is required' });
+    }
+    const response = await initializeFacilityTopUpInFacilityService(facilityId, req.body);
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getFacilityBalanceHistoryController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = res.locals.user;
+    const facilityId = user?.facilityId;
+    if (!facilityId) {
+      return res.status(400).json({ success: false, message: 'Facility ID is required' });
+    }
+    const response = await getFacilityBalanceHistoryFromFacilityService(facilityId, req.query);
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const paystackWebhookController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const signature = req.headers['x-paystack-signature'] as string | undefined;
+    const rawBody = (req as any).rawBody 
+      ? (req as any).rawBody.toString('utf8') 
+      : JSON.stringify(req.body);
+
+    const response = await relayPaystackWebhookToFacilityService(rawBody, signature, req.body);
     return res.status(200).json(response);
   } catch (error) {
     return next(error);

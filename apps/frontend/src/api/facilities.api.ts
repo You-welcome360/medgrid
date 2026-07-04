@@ -57,4 +57,19 @@ export const facilitiesApi = {
       location?: { latitude: number; longitude: number };
     }
   ) => api.patch<Facility>(`/facilities/${id}`, data),
+
+  getBalance: () => api.get<{ facilityId: string; balance: number }>('/facilities/balance'),
+
+  getBalanceHistory: (params: { page: number; limit: number; type?: string }) => {
+    const searchParams = new URLSearchParams();
+    searchParams.append('page', String(params.page));
+    searchParams.append('limit', String(params.limit));
+    if (params.type) {
+      searchParams.append('type', params.type);
+    }
+    return api.get<any>(`/facilities/balance/history?${searchParams.toString()}`);
+  },
+
+  initializeTopUp: (data: { amount: number; callbackUrl: string }) =>
+    api.post<{ payment_url: string; reference: string }>('/facilities/balance/top-up', data),
 };

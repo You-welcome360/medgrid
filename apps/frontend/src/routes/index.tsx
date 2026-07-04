@@ -19,12 +19,14 @@ const CompleteInvitationPage = lazy(
 const DashboardPage = lazy(() => import('@/pages/dashboard'));
 const RequestsPage = lazy(() => import('@/pages/requests'));
 const InventoryPage = lazy(() => import('@/pages/inventory'));
+const BalancePage = lazy(() => import('@/pages/balance'));
 const FacilitiesPage = lazy(() => import('@/pages/facilities'));
 const FacilityUsersPage = lazy(() => import('@/pages/users'));
 const NotificationsPage = lazy(() => import('@/pages/notifications'));
 const ReportsPage = lazy(() => import('@/pages/reports'));
 const SettingsPage = lazy(() => import('@/pages/settings'));
 const NetworkDirectoryPage = lazy(() => import('@/pages/network-directory'));
+const SOSDashboardPage = lazy(() => import('@/pages/sos-dashboard'));
 
 // Super admin pages
 const AdminDashboardPage = lazy(() => import('@/pages/admin/dashboard'));
@@ -103,6 +105,14 @@ function AppRoutes() {
             }
           />
           <Route
+            path="/sos-dashboard"
+            element={
+              <SuspenseWrapper>
+                <SOSDashboardPage />
+              </SuspenseWrapper>
+            }
+          />
+          <Route
             path="/network-directory"
             element={
               <SuspenseWrapper>
@@ -123,6 +133,14 @@ function AppRoutes() {
             element={
               <SuspenseWrapper>
                 <InventoryPage />
+              </SuspenseWrapper>
+            }
+          />
+          <Route
+            path="/balance"
+            element={
+              <SuspenseWrapper>
+                <BalancePage />
               </SuspenseWrapper>
             }
           />

@@ -1,0 +1,273 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  FACILITY_ADMIN
+  INVENTORY_MANAGER
+  COORDINATION_MANAGER
+}
+
+enum FacilityType {
+  HOSPITAL
+  BLOOD_BANK
+  PHARMACY
+  SUPPLIER
+}
+
+enum ResourceType {
+  BLOOD
+  DRUG
+  ICU_BED
+  VENTILATOR
+  OXYGEN_CYLINDER
+  OPERATING_THEATRE
+  OTHER_SUPPLY
+}
+
+enum BloodGroup {
+  A_POS
+  A_NEG
+  B_POS
+  B_NEG
+  AB_POS
+  AB_NEG
+  O_POS
+  O_NEG
+}
+
+model User {
+  id           String  @id @default(uuid())
+  email        String  @unique
+  passwordHash String  @map("password_hash")
+  role         Role
+  facilityId   String? @map("facility_id")
+  isFirstLogin Boolean @default(true) @map("is_first_login")
+
+  createdBy String? @map("created_by")
+  isActive  Boolean @default(true) @map("is_active")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  facility  Facility? @relation(fields: [facilityId], references: [id])
+
+  coordinationRequests CoordinationRequest[] @relation("UserRequests")
+
+  notifications               Notification[]
+  notificationPreferences     UserNotificationPreference[]
+
+  @@map("users")
+}
+
+model Facility {
+  id       String       @id @default(uuid())
+  name     String       @unique
+  location String
+  type     FacilityType
+  phone    String
+  balance  Decimal      @default(0.00) @db.Decimal(10, 2)
+
+  // Geolocation for emergency broadcast radius queries
+  latitude  Float?
+  longitude Float?
+
+  createdAt DateTime @default(now())
+
+  users                  User[]
+  inventory              InventoryItem[]
+  coordinationRequests   CoordinationRequest[] @relation("FacilityRequests")
+  fulfilledRequests      CoordinationRequest[] @relation("FacilityFulfillments")
+  acknowledgedRequests   CoordinationRequest[] @relation("FacilityAcknowledgments")
+  balanceTransactions    BalanceTransaction[]
+  notifications          Notification[]
+}
+
+model InventoryItem {
+  id String @id @default(uuid())
+
+  facilityId String
+  facility   Facility @relation(fields: [facilityId], references: [id])
+
+  resourceType ResourceType
+
+  name       String?
+  bloodGroup BloodGroup?
+
+  quantity  Int?
+  total     Int?
+  available Int?
+
+  price      Decimal?  @db.Decimal(10, 2)
+  expiryDate DateTime?
+
+  category    String?
+  unitMeasure String?
+
+  isMovable Boolean
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  audits InventoryAudit[]
+
+  @@index([facilityId])
+  @@index([resourceType])
+  @@index([expiryDate])
+}
+
+model InventoryAudit {
+  id String @id @default(uuid())
+
+  inventoryItemId String
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+
+  changedBy String
+
+  previousValue Json?
+  newValue      Json
+
+  createdAt DateTime @default(now())
+
+  @@index([inventoryItemId])
+  @@index([changedBy])
+}
+
+model ResourceTypeInfo {
+  id           String       @id @default(uuid())
+  name         String       @unique
+  type         ResourceType
+  defaultPrice Decimal      @db.Decimal(10, 2) @map("default_price")
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  coordinationRequests CoordinationRequest[]
+
+  @@map("resource_types")
+}
+
+model CoordinationRequest {
+  id              String    @id @default(uuid())
+  facilityId      String    @map("facility_id")
+  resourceTypeId  String    @map("resource_type_id")
+  quantity        Int
+  classification  String    @default("normal")
+  urgencyLevel    String    @map("urgency_level")
+  timeframeHours  Int?      @map("timeframe_hours")
+  additionalNotes String?   @map("additional_notes")
+  status          String    @default("open")
+
+  // Emergency-specific fields
+  broadcastRadiusKm Int?      @map("broadcast_radius_km")
+  acknowledgedBy    String?   @map("acknowledged_by")
+  acknowledgedAt    DateTime? @map("acknowledged_at")
+
+  fulfilledBy    String?   @map("fulfilled_by")
+  fulfilledAt    DateTime? @map("fulfilled_at")
+  pricePerUnit   Decimal?  @db.Decimal(10, 2) @map("price_per_unit")
+  totalAmount    Decimal?  @db.Decimal(10, 2) @map("total_amount")
+  paymentStatus  String    @default("paid") @map("payment_status")
+  transactionId  String?   @map("transaction_id")
+  createdBy      String    @map("created_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  expiresAt      DateTime? @map("expires_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  facility              Facility          @relation(name: "FacilityRequests", fields: [facilityId], references: [id])
+  resourceType          ResourceTypeInfo  @relation(fields: [resourceTypeId], references: [id])
+  creator               User              @relation(name: "UserRequests", fields: [createdBy], references: [id])
+  fulfillmentFacility   Facility?         @relation(name: "FacilityFulfillments", fields: [fulfilledBy], references: [id])
+  acknowledgingFacility Facility?         @relation(name: "FacilityAcknowledgments", fields: [acknowledgedBy], references: [id])
+
+  @@index([facilityId])
+  @@index([resourceTypeId])
+  @@index([createdBy])
+  @@index([status])
+  @@index([classification])
+  @@map("coordination_requests")
+}
+
+model BalanceTransaction {
+  id            String   @id @default(uuid())
+  facilityId    String   @map("facility_id")
+  amount        Decimal  @db.Decimal(10, 2)
+  type          String
+  reference     String?
+  paymentMethod String   @map("payment_method")
+  status        String
+  description   String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  facility Facility @relation(fields: [facilityId], references: [id])
+
+  @@index([facilityId])
+  @@index([type])
+  @@index([status])
+  @@map("balance_transactions")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 3 – Notifications
+// ---------------------------------------------------------------------------
+
+enum NotificationType {
+  REQUEST_CREATED
+  REQUEST_ACKNOWLEDGED
+  REQUEST_FULFILLED
+  REQUEST_CANCELED
+  REQUEST_EXPIRED
+  BALANCE_LOW
+  BALANCE_TOPUP
+}
+
+enum NotificationChannel {
+  WEBSOCKET
+  PUSH
+  EMAIL
+}
+
+model Notification {
+  id         String              @id @default(uuid())
+  userId     String              @map("user_id")
+  facilityId String              @map("facility_id")
+  type       NotificationType
+  channel    NotificationChannel
+  title      String
+  body       String
+  data       Json?
+
+  readAt      DateTime? @map("read_at")
+  deliveredAt DateTime? @map("delivered_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  user     User     @relation(fields: [userId], references: [id])
+  facility Facility @relation(fields: [facilityId], references: [id])
+
+  @@index([userId])
+  @@index([facilityId])
+  @@index([type])
+  @@index([readAt])
+  @@map("notifications")
+}
+
+model UserNotificationPreference {
+  id           String              @id @default(uuid())
+  userId       String              @map("user_id")
+  channel      NotificationChannel
+  enabled      Boolean             @default(true)
+  emergencyOnly Boolean            @default(false) @map("emergency_only")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt      @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, channel])
+  @@index([userId])
+  @@map("user_notification_preferences")
+}

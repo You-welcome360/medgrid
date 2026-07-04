@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { useSocket } from '@/hooks/use-socket';
 import {
   LayoutDashboard,
   ArrowLeftRight,
@@ -18,6 +21,8 @@ import {
   X,
   ChevronDown,
   Globe,
+  Radio,
+  Wallet,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -33,6 +38,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { SOSPanicButton } from '@/components/shared/sos-panic-button';
 
 // ============================================================
 // Nav items per role
@@ -40,8 +46,10 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const facilityNavItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/sos-dashboard', icon: Radio, label: 'SOS Broadcasts' },
   { to: '/requests', icon: ArrowLeftRight, label: 'Requests' },
   { to: '/inventory', icon: Package, label: 'Inventory' },
+  { to: '/balance', icon: Wallet, label: 'Balance' },
   { to: '/facilities', icon: Building2, label: 'Facilities' },
   { to: '/network', icon: Map, label: 'Network Map' },
   { to: '/network-directory', icon: Globe, label: 'Network Directory' },
@@ -52,8 +60,10 @@ const facilityNavItems = [
 
 const facilityAdminNavItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/sos-dashboard', icon: Radio, label: 'SOS Broadcasts' },
   { to: '/requests', icon: ArrowLeftRight, label: 'Requests' },
   { to: '/inventory', icon: Package, label: 'Inventory' },
+  { to: '/balance', icon: Wallet, label: 'Balance' },
   { to: '/facilities', icon: Building2, label: 'Facilities' },
   { to: '/users', icon: Users, label: 'Team' },
   { to: '/network', icon: Map, label: 'Network Map' },
@@ -195,6 +205,38 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
 
 export function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isSuperAdmin } = useRole();
+  const queryClient = useQueryClient();
+
+  const socketEvents = useMemo(() => ({
+    'request:created': (data: any) => {
+      toast.info(`New request: ${data.itemName || 'item'} (${data.quantity} ${data.unit || ''})`);
+      queryClient.invalidateQueries({ queryKey: ['requests'] });
+    },
+    'request:acknowledged': (data: any) => {
+      toast.success(`Request acknowledged: ${data.itemName || 'item'}`);
+      queryClient.invalidateQueries({ queryKey: ['requests'] });
+    },
+    'request:fulfilled': (data: any) => {
+      toast.success(`Request fulfilled: ${data.itemName || 'item'}`);
+      queryClient.invalidateQueries({ queryKey: ['requests'] });
+      queryClient.invalidateQueries({ queryKey: ['facilities'] });
+    },
+    'request:canceled': (data: any) => {
+      toast.warning(`Request canceled: ${data.itemName || 'item'}`);
+      queryClient.invalidateQueries({ queryKey: ['requests'] });
+    },
+    'balance:topup': (data: any) => {
+      toast.success(`Balance top-up successful! New balance: ₵${Number(data.newBalance || data.balance || 0).toFixed(2)}`);
+      queryClient.invalidateQueries({ queryKey: ['facilities'] });
+    },
+    'balance:low': (data: any) => {
+      toast.error(`Warning: Balance is low! Current: ₵${Number(data.currentBalance || data.balance || 0).toFixed(2)}`);
+      queryClient.invalidateQueries({ queryKey: ['facilities'] });
+    },
+  }), [queryClient]);
+
+  useSocket(socketEvents);
 
   return (
     <div className="flex h-screen bg-background">
@@ -230,8 +272,9 @@ export function DashboardLayout() {
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-7xl p-6">
+          <div className="mx-auto max-w-7xl p-6 relative">
             <Outlet />
+            {!isSuperAdmin && <SOSPanicButton />}
           </div>
         </main>
       </div>

@@ -9,6 +9,7 @@ import {
   deleteInventoryController,
   setThresholdController,
   setReservedThresholdController,
+  setPriceController,
   createStockMovementController,
   getStockMovementsController,
   getActiveAlertsController,
@@ -39,6 +40,7 @@ inventoryRouter.patch(
   '/:id/reserved-threshold',
   setReservedThresholdController
 );
+inventoryRouter.patch('/:id/price', setPriceController);
 
 // Stock Movements
 inventoryRouter.post('/:id/movements', createStockMovementController);

@@ -19,6 +19,9 @@ import {
   confirmReceiptInCoordinationService,
   cancelRequestInCoordinationService,
   markFailedInCoordinationService,
+  getBroadcastsFromCoordinationService,
+  acceptBroadcastInCoordinationService,
+  declineBroadcastInCoordinationService,
 } from '../../clients/coordination';
 
 // ===========================================================================
@@ -224,6 +227,60 @@ export const markFailedController = async (
     const id = req.params['id'] as string;
 
     const response = await markFailedInCoordinationService(
+      id,
+      getRequestHeaders(req, res)
+    );
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getBroadcastsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const ignoreRadius = req.query['ignoreRadius'] === 'true';
+    const response = await getBroadcastsFromCoordinationService(
+      getRequestHeaders(req, res),
+      ignoreRadius
+    );
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const claimBroadcastController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params['id'] as string;
+    const response = await acceptBroadcastInCoordinationService(
+      id,
+      getRequestHeaders(req, res)
+    );
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const declineBroadcastController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params['id'] as string;
+    const response = await declineBroadcastInCoordinationService(
       id,
       getRequestHeaders(req, res)
     );

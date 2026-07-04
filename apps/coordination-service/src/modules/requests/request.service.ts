@@ -1,4 +1,4 @@
-import { writeAuditLog, AuditAction } from '@medgrid/database';
+import { writeAuditLog, AuditAction, prisma, Prisma } from '@medgrid/database';
 import {
   createNotFoundError,
   createAuthorizationError,
@@ -14,6 +14,13 @@ import {
 } from '@medgrid/shared';
 
 import {
+  notifyRequestCreated,
+  notifyRequestAcknowledged,
+  notifyRequestFulfilled,
+  notifyRequestCanceled,
+} from '@medgrid/notifications';
+
+import {
   createResourceRequest,
   findRequestById,
   findAllRequests,
@@ -24,11 +31,16 @@ import {
   completeRequest,
   cancelRequest,
   failRequest,
+  findNearbyBroadcasts,
+  acceptBroadcastRequest,
+  declineBroadcastRequest,
 } from './request.repository';
 import {
   lookupInventoryItem,
   createInventoryForTransfer,
   recordInternalStockMovement,
+  getFacilityDetails,
+  getFacilityInventorySummary,
 } from '../../clients/facility.client';
 
 // ===========================================================================
@@ -58,6 +70,15 @@ const toResourceRequestDTO = (
     patient: req.patient as ResourceRequestDTO['patient'],
     rejectionReason: req.rejectionReason,
     cancellationReason: req.cancellationReason,
+    isEmergency: req.isEmergency,
+    isBroadcast: req.isBroadcast,
+    maxRadiusKm: req.maxRadiusKm,
+    declinedBy: req.declinedBy,
+    pricePerUnit: req.pricePerUnit ? Number(req.pricePerUnit) : null,
+    totalAmount: req.totalAmount ? Number(req.totalAmount) : null,
+    paymentStatus: req.paymentStatus,
+    transactionId: req.transactionId,
+    expiresAt: req.expiresAt?.toISOString() ?? null,
     requestedAt: req.requestedAt.toISOString(),
     acceptedAt: req.acceptedAt?.toISOString() ?? null,
     dispatchedAt: req.dispatchedAt?.toISOString() ?? null,
@@ -109,6 +130,31 @@ const assertRequester = (
 // Service functions
 // ===========================================================================
 
+const refundRequest = async (txClient: any, request: any, reason: string) => {
+  if (request.totalAmount && Number(request.totalAmount) > 0) {
+    const totalAmount = Number(request.totalAmount);
+    
+    // Credit requester
+    await txClient.facility.update({
+      where: { id: request.requestingFacilityId },
+      data: { balance: { increment: totalAmount } },
+    });
+
+    // Create transaction log
+    await txClient.balanceTransaction.create({
+      data: {
+        facilityId: request.requestingFacilityId,
+        amount: totalAmount,
+        type: 'credit',
+        reference: `req_${request.id}`,
+        paymentMethod: 'system',
+        status: 'success',
+        description: `Refund for request rejection/cancellation: ${request.itemName} (Reason: ${reason})`,
+      },
+    });
+  }
+};
+
 export const createRequest = async (
   data: CreateRequestDTO,
   requestingFacilityId: string,
@@ -120,11 +166,101 @@ export const createRequest = async (
     );
   }
 
-  const request = await createResourceRequest(
-    data,
-    requestingFacilityId,
-    requestedById
-  );
+  let request: any;
+
+  await prisma.$transaction(async (tx) => {
+    // 1. Get requester
+    const requester = await tx.facility.findUnique({
+      where: { id: requestingFacilityId },
+    });
+    if (!requester) {
+      throw createNotFoundError('Requesting facility not found');
+    }
+
+    // 2. Resolve unit price
+    let pricePerUnit = 0;
+    if (data.supplyingFacilityId) {
+      const supplierItem = await tx.inventory.findFirst({
+        where: {
+          facilityId: data.supplyingFacilityId,
+          resourceType: data.resourceType as ResourceType,
+          itemName: data.itemName,
+          deletedAt: null,
+        },
+      });
+      pricePerUnit = supplierItem?.price ? Number(supplierItem.price) : 0;
+    } else {
+      // Broadcast: check network baseline
+      const networkItem = await tx.inventory.findFirst({
+        where: {
+          resourceType: data.resourceType as ResourceType,
+          itemName: data.itemName,
+          deletedAt: null,
+          price: { not: null },
+        },
+      });
+      pricePerUnit = networkItem?.price ? Number(networkItem.price) : 0;
+    }
+
+    const totalCost = pricePerUnit * data.quantity;
+    const balance = Number(requester.balance);
+    const isEmergency = data.isEmergency ?? false;
+
+    // 3. Balance verification
+    if (!isEmergency) {
+      if (balance < totalCost) {
+        throw createValidationError('Insufficient facility balance to place this request');
+      }
+    } else {
+      if (balance < 0) {
+        throw createValidationError('Facility balance is negative. Emergency request cannot be placed.');
+      }
+    }
+
+    // 4. Deduct balance
+    await tx.facility.update({
+      where: { id: requestingFacilityId },
+      data: { balance: { decrement: totalCost } },
+    });
+
+    // 5. Create Resource Request record
+    request = await tx.resourceRequest.create({
+      data: {
+        requestingFacilityId,
+        supplyingFacilityId: data.supplyingFacilityId,
+        requestedById,
+        resourceType: data.resourceType as ResourceType,
+        itemName: data.itemName,
+        quantity: data.quantity,
+        unit: data.unit as InventoryUnit,
+        priority: data.priority as RequestPriority,
+        description: data.description,
+        isEmergency: isEmergency,
+        isBroadcast: data.isBroadcast ?? false,
+        maxRadiusKm: data.maxRadiusKm ?? null,
+        pricePerUnit,
+        totalAmount: totalCost,
+        paymentStatus: 'paid',
+        expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
+        patient: data.patient
+          ? (data.patient as unknown as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
+      },
+    });
+
+    // 6. Log transaction record with real request reference ID
+    await tx.balanceTransaction.create({
+      data: {
+        facilityId: requestingFacilityId,
+        amount: totalCost,
+        type: 'debit',
+        reference: `req_${request.id}`,
+        paymentMethod: 'system',
+        status: 'success',
+        description: `${isEmergency ? 'Emergency' : 'Standard'} escrow payment for ${data.itemName} (Qty: ${data.quantity})`,
+      },
+    });
+  });
 
   await writeAuditLog({
     actorId: requestedById,
@@ -142,6 +278,10 @@ export const createRequest = async (
     },
   });
 
+  notifyRequestCreated(request.id).catch((err) =>
+    console.error('[Notify] notifyRequestCreated failed:', err.message)
+  );
+
   return toResourceRequestDTO(request);
 };
 
@@ -149,6 +289,11 @@ export const getRequests = async (
   facilityId: string | null,
   status?: RequestStatus
 ): Promise<ResourceRequestDTO[]> => {
+  // Dynamically check and clean up expired pending requests
+  await expirePendingRequests().catch((err) =>
+    console.error('[Scheduler] expirePendingRequests failed:', err.message)
+  );
+
   const requests = facilityId
     ? await findRequestsByFacility(facilityId, status)
     : await findAllRequests(status);
@@ -230,6 +375,10 @@ export const accept = async (
       : undefined,
   });
 
+  notifyRequestAcknowledged(id).catch((err) =>
+    console.error('[Notify] notifyRequestAcknowledged failed:', err.message)
+  );
+
   return {
     ...toResourceRequestDTO(updated),
     reservedThresholdWarning,
@@ -251,7 +400,19 @@ export const reject = async (
   );
   assertSupplier(request, supplyingFacilityId);
 
-  const updated = await rejectRequest(id, handledById, data.reason);
+  let updated: any;
+  await prisma.$transaction(async (tx) => {
+    updated = await tx.resourceRequest.update({
+      where: { id },
+      data: {
+        status: RequestStatus.REJECTED,
+        handledById,
+        rejectionReason: data.reason,
+      },
+    });
+
+    await refundRequest(tx, request, data.reason);
+  });
 
   await writeAuditLog({
     actorId: handledById,
@@ -290,6 +451,29 @@ export const dispatch = async (
     newValue: { dispatchedAt: updated.dispatchedAt?.toISOString() },
   });
 
+  // Deduct stock from supplier at dispatch time
+  const supplierItem = await lookupInventoryItem(
+    supplyingFacilityId,
+    request!.itemName,
+    request!.resourceType
+  );
+
+  if (supplierItem) {
+    await recordInternalStockMovement(
+      supplierItem.inventoryId,
+      supplyingFacilityId,
+      -request!.quantity,
+      'TRANSFER_OUT',
+      `Dispatched for resource request ${id}`,
+      handledById,
+      id
+    );
+  } else {
+    console.warn(
+      `[coordination] dispatch: supplier item "${request!.itemName}" not found for facility ${supplyingFacilityId}. Supplier stock not reduced.`
+    );
+  }
+
   return toResourceRequestDTO(updated);
 };
 
@@ -318,8 +502,34 @@ export const confirmReceipt = async (
     newValue: { completedAt: updated.completedAt?.toISOString() },
   });
 
-  // Fire stock movements — supplier TRANSFER_OUT, requester TRANSFER_IN
-  // Auto-create requester item from supplier metadata if it doesn't exist
+  // Perform financial settlement if price is set
+  if (request!.totalAmount && Number(request!.totalAmount) > 0 && request!.supplyingFacilityId) {
+    const totalAmount = Number(request!.totalAmount);
+    await prisma.$transaction(async (txClient: any) => {
+      // 1. Credit supplier
+      await txClient.facility.update({
+        where: { id: request!.supplyingFacilityId! },
+        data: { balance: { increment: totalAmount } },
+      });
+
+      // 2. Create transaction for supplier
+      await txClient.balanceTransaction.create({
+        data: {
+          facilityId: request!.supplyingFacilityId!,
+          amount: totalAmount,
+          type: 'credit',
+          reference: `req_${request!.id}`,
+          paymentMethod: 'system',
+          status: 'success',
+          description: `Fulfillment settlement: ${request!.itemName} (Qty: ${request!.quantity})`,
+        },
+      });
+    });
+  }
+
+  // Stock movements on confirm receipt:
+  //   - TRANSFER_OUT already happened at dispatch time
+  //   - We only do TRANSFER_IN to requester here
   if (request!.supplyingFacilityId) {
     const supplierItem = await lookupInventoryItem(
       request!.supplyingFacilityId,
@@ -327,84 +537,54 @@ export const confirmReceipt = async (
       request!.resourceType
     );
 
-    if (supplierItem) {
+    // Ensure requester has the item — create from supplier metadata if missing
+    let requesterItem = await lookupInventoryItem(
+      requestingFacilityId,
+      request!.itemName,
+      request!.resourceType
+    );
+
+    if (!requesterItem && supplierItem) {
+      const created = await createInventoryForTransfer(
+        requestingFacilityId,
+        request!.itemName,
+        request!.resourceType,
+        supplierItem.unit,
+        supplierItem.metadata,
+        confirmedById
+      );
+
+      if (created) {
+        requesterItem = {
+          inventoryId: created.inventoryId,
+          facilityId: requestingFacilityId,
+          itemName: request!.itemName,
+          resourceType: request!.resourceType,
+          unit: supplierItem.unit,
+          metadata: supplierItem.metadata,
+          currentStock: 0,
+          reservedThreshold: null,
+          isMovable: supplierItem.isMovable,
+        };
+      }
+    }
+
+    if (requesterItem) {
       await recordInternalStockMovement(
-        supplierItem.inventoryId,
-        request!.supplyingFacilityId,
-        -request!.quantity,
-        'TRANSFER_OUT',
-        `Fulfilled resource request ${id}`,
-        request!.handledById ?? confirmedById,
+        requesterItem.inventoryId,
+        requestingFacilityId,
+        request!.quantity,
+        'TRANSFER_IN',
+        `Received resource request ${id}`,
+        confirmedById,
         id
-      );
-
-      // Ensure requester has the item — create from supplier metadata if missing
-      let requesterItem = await lookupInventoryItem(
-        requestingFacilityId,
-        request!.itemName,
-        request!.resourceType
-      );
-
-      if (!requesterItem) {
-        const created = await createInventoryForTransfer(
-          requestingFacilityId,
-          request!.itemName,
-          request!.resourceType,
-          supplierItem.unit,
-          supplierItem.metadata,
-          confirmedById
-        );
-
-        if (created) {
-          requesterItem = {
-            inventoryId: created.inventoryId,
-            facilityId: requestingFacilityId,
-            itemName: request!.itemName,
-            resourceType: request!.resourceType,
-            unit: supplierItem.unit,
-            metadata: supplierItem.metadata,
-            currentStock: 0,
-            reservedThreshold: null,
-          };
-        }
-      }
-
-      if (requesterItem) {
-        await recordInternalStockMovement(
-          requesterItem.inventoryId,
-          requestingFacilityId,
-          request!.quantity,
-          'TRANSFER_IN',
-          `Received resource request ${id}`,
-          confirmedById,
-          id
-        );
-      }
-    } else {
-      // Supplier item not found — still try to update requester if they have it
-      const requesterItem = await lookupInventoryItem(
-        requestingFacilityId,
-        request!.itemName,
-        request!.resourceType
-      );
-
-      if (requesterItem) {
-        await recordInternalStockMovement(
-          requesterItem.inventoryId,
-          requestingFacilityId,
-          request!.quantity,
-          'TRANSFER_IN',
-          `Received resource request ${id}`,
-          confirmedById,
-          id
-        );
-      }
-
-      console.warn(
-        `[coordination] confirmReceipt: supplier item "${request!.itemName}" not found for facility ${request!.supplyingFacilityId}. Supplier stock not reduced.`
       );
     }
   }
+
+  notifyRequestFulfilled(id).catch((err) =>
+    console.error('[Notify] notifyRequestFulfilled failed:', err.message)
+  );
 
   return toResourceRequestDTO(updated);
 };
@@ -424,7 +604,18 @@ export const cancel = async (
   );
   assertRequester(request, requestingFacilityId);
 
-  const updated = await cancelRequest(id, data.reason);
+  let updated: any;
+  await prisma.$transaction(async (tx) => {
+    updated = await tx.resourceRequest.update({
+      where: { id },
+      data: {
+        status: RequestStatus.CANCELLED,
+        cancellationReason: data.reason,
+      },
+    });
+
+    await refundRequest(tx, request, data.reason);
+  });
 
   await writeAuditLog({
     actorId: cancelledById,
@@ -434,6 +625,10 @@ export const cancel = async (
     facilityId: requestingFacilityId,
     newValue: { reason: data.reason },
   });
+
+  notifyRequestCanceled(id, 0).catch((err) =>
+    console.error('[Notify] notifyRequestCanceled failed:', err.message)
+  );
 
   return toResourceRequestDTO(updated);
 };
@@ -463,4 +658,225 @@ export const markFailed = async (
   });
 
   return toResourceRequestDTO(updated);
+};
+
+export const getBroadcastsForFacility = async (
+  facilityId: string,
+  ignoreRadius: boolean = false
+): Promise<ResourceRequestDTO[]> => {
+  const facility = await getFacilityDetails(facilityId);
+  if (!facility) {
+    throw createNotFoundError('Active facility not found');
+  }
+
+  // Always fetch inventory regardless of ignoreRadius — suppliers must have the item to see the broadcast
+  const inventorySummary = await getFacilityInventorySummary(facilityId);
+
+  // Build a lookup map: "itemName:resourceType" -> { currentStock, isMovable }
+  const inventoryMap = new Map<string, { currentStock: number; isMovable: boolean }>();
+  for (const item of inventorySummary) {
+    const key = `${item.itemName.trim().toLowerCase()}:${item.resourceType}`;
+    const existing = inventoryMap.get(key);
+    // Accumulate stock for duplicate entries (same item, multiple batches)
+    inventoryMap.set(key, {
+      currentStock: (existing?.currentStock ?? 0) + item.currentStock,
+      isMovable: item.isMovable,
+    });
+  }
+
+  const broadcasts = await findNearbyBroadcasts(
+    facilityId,
+    facility.latitude,
+    facility.longitude,
+    ignoreRadius
+  );
+
+  // Filter broadcasts: supplier must have the item in stock AND it must be movable
+  const filtered = broadcasts.filter((b) => {
+    const key = `${b.itemName.trim().toLowerCase()}:${b.resourceType}`;
+    const stock = inventoryMap.get(key);
+    if (!stock) return false;              // facility doesn't carry this item
+    if (!stock.isMovable) return false;    // item is immovable (beds, heavy equipment)
+    if (stock.currentStock < b.quantity) return false; // insufficient stock
+    return true;
+  });
+
+  return filtered.map((b) => ({
+    ...toResourceRequestDTO(b),
+    distance: b.distance,
+  } as any));
+};
+
+export const claimBroadcast = async (
+  id: string,
+  supplyingFacilityId: string,
+  handledById: string
+): Promise<ResourceRequestDTO & { reservedThresholdWarning?: string }> => {
+  const request = await findRequestById(id);
+  if (!request) {
+    throw createNotFoundError('Broadcast request not found');
+  }
+
+  if (!request.isBroadcast) {
+    throw createValidationError('Selected request is not a broadcast request');
+  }
+
+  assertStatus(
+    request,
+    [RequestStatus.PENDING],
+    'Only pending broadcast requests can be claimed'
+  );
+
+  if (request.requestingFacilityId === supplyingFacilityId) {
+    throw createValidationError('Cannot claim your own broadcast request');
+  }
+
+  const supplierItem = await lookupInventoryItem(
+    supplyingFacilityId,
+    request.itemName,
+    request.resourceType
+  );
+
+  if (!supplierItem || supplierItem.currentStock < request.quantity) {
+    throw createValidationError('Your facility does not have enough stock of this item to fulfill the request');
+  }
+
+  let reservedThresholdWarning: string | undefined;
+  const stockAfterFulfillment = supplierItem.currentStock - request.quantity;
+  if (
+    supplierItem.reservedThreshold !== null &&
+    stockAfterFulfillment < supplierItem.reservedThreshold
+  ) {
+    reservedThresholdWarning =
+      `Warning: Fulfilling this request (${request.quantity} ${request.unit.toLowerCase()}) ` +
+      `would reduce your stock of "${supplierItem.itemName}" to ${stockAfterFulfillment} ` +
+      `units, below your reserved threshold of ${supplierItem.reservedThreshold}.`;
+  }
+
+  const supplierPrice = supplierItem.price ? Number(supplierItem.price) : 0;
+  const actualTotalCost = supplierPrice * request.quantity;
+  const diff = actualTotalCost - Number(request.totalAmount ?? 0);
+
+  let updated: any;
+
+  await prisma.$transaction(async (tx) => {
+    // 1. Process balance adjustment for requester
+    if (diff > 0) {
+      const requester = await tx.facility.findUnique({
+        where: { id: request.requestingFacilityId },
+      });
+      if (!requester) {
+        throw createNotFoundError('Requesting facility not found');
+      }
+
+      const balance = Number(requester.balance);
+      if (!request.isEmergency && balance < diff) {
+        throw createValidationError('Requesting facility has insufficient funds to pay the price difference');
+      }
+
+      await tx.facility.update({
+        where: { id: request.requestingFacilityId },
+        data: { balance: { decrement: diff } },
+      });
+
+      await tx.balanceTransaction.create({
+        data: {
+          facilityId: request.requestingFacilityId,
+          amount: diff,
+          type: 'debit',
+          reference: `req_${request.id}`,
+          paymentMethod: 'system',
+          status: 'success',
+          description: `Price adjustment (debit) for broadcast accept: ${request.itemName}`,
+        },
+      });
+    } else if (diff < 0) {
+      const refundAmt = Math.abs(diff);
+      await tx.facility.update({
+        where: { id: request.requestingFacilityId },
+        data: { balance: { increment: refundAmt } },
+      });
+
+      await tx.balanceTransaction.create({
+        data: {
+          facilityId: request.requestingFacilityId,
+          amount: refundAmt,
+          type: 'credit',
+          reference: `req_${request.id}`,
+          paymentMethod: 'system',
+          status: 'success',
+          description: `Price adjustment (refund) for broadcast accept: ${request.itemName}`,
+        },
+      });
+    }
+
+    // 2. Perform acceptance update
+    updated = await tx.resourceRequest.update({
+      where: { id },
+      data: {
+        supplyingFacilityId,
+        handledById,
+        status: RequestStatus.ACCEPTED,
+        acceptedAt: new Date(),
+        pricePerUnit: supplierPrice,
+        totalAmount: actualTotalCost,
+      },
+    });
+  });
+
+  await writeAuditLog({
+    actorId: handledById,
+    action: AuditAction.REQUEST_ACCEPTED,
+    entityType: 'ResourceRequest',
+    entityId: id,
+    facilityId: supplyingFacilityId,
+    newValue: {
+      supplyingFacilityId,
+      isBroadcastClaim: true,
+      reservedThresholdWarning: reservedThresholdWarning || undefined,
+    },
+  });
+
+  return {
+    ...toResourceRequestDTO(updated),
+    reservedThresholdWarning,
+  };
+};
+
+export const declineBroadcast = async (
+  id: string,
+  facilityId: string
+): Promise<void> => {
+  const request = await findRequestById(id);
+  if (!request) {
+    throw createNotFoundError('Broadcast request not found');
+  }
+  if (!request.isBroadcast) {
+    throw createValidationError('Request is not a broadcast');
+  }
+  await declineBroadcastRequest(id, facilityId);
+};
+
+export const expirePendingRequests = async () => {
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const expiredRequests = await prisma.resourceRequest.findMany({
+    where: {
+      status: RequestStatus.PENDING,
+      requestedAt: { lt: twentyFourHoursAgo },
+    },
+  });
+
+  for (const req of expiredRequests) {
+    await prisma.$transaction(async (tx) => {
+      await tx.resourceRequest.update({
+        where: { id: req.id },
+        data: {
+          status: RequestStatus.CANCELLED,
+          cancellationReason: 'Auto-cancelled: No supplier accepted within 24 hours',
+        },
+      });
+
+      await refundRequest(tx, req, '24h Expiration');
+    });
+  }
 };

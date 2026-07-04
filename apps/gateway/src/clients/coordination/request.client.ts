@@ -147,3 +147,43 @@ export const markFailedInCoordinationService = async (
 
   return response.json() as Promise<ApiResponse<ResourceRequestDTO>>;
 };
+
+export const getBroadcastsFromCoordinationService = async (
+  headers: RequestHeaders,
+  ignoreRadius?: boolean
+): Promise<ApiResponse<ResourceRequestDTO[]>> => {
+  const url = new URL(`${base()}/broadcasts`);
+  if (ignoreRadius) {
+    url.searchParams.set('ignoreRadius', 'true');
+  }
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: buildHeaders(headers),
+  });
+
+  return response.json() as Promise<ApiResponse<ResourceRequestDTO[]>>;
+};
+
+export const acceptBroadcastInCoordinationService = async (
+  id: string,
+  headers: RequestHeaders
+): Promise<ApiResponse<ResourceRequestDTO>> => {
+  const response = await fetch(`${base()}/${id}/accept-broadcast`, {
+    method: 'POST',
+    headers: buildHeaders(headers),
+  });
+
+  return response.json() as Promise<ApiResponse<ResourceRequestDTO>>;
+};
+
+export const declineBroadcastInCoordinationService = async (
+  id: string,
+  headers: RequestHeaders
+): Promise<ApiResponse<null>> => {
+  const response = await fetch(`${base()}/${id}/decline-broadcast`, {
+    method: 'POST',
+    headers: buildHeaders(headers),
+  });
+
+  return response.json() as Promise<ApiResponse<null>>;
+};

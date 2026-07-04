@@ -225,6 +225,17 @@ export interface ResourceRequest {
   completedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  isEmergency: boolean;
+  isBroadcast: boolean;
+  maxRadiusKm: number | null;
+  declinedBy: string[];
+  distance?: number;
+  requestingFacilityName?: string;
+  requestingFacilityType?: string;
+  requestingFacilityPhone?: string;
+  requestingFacilityEmail?: string;
+  requestingFacilityRegion?: string;
+  requestingFacilityDistrict?: string;
   reservedThresholdWarning?: string | null;
 }
 

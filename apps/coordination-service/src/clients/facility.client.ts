@@ -17,6 +17,16 @@ export interface InventoryLookupResult {
   metadata: Record<string, unknown>;
   currentStock: number;
   reservedThreshold: number | null;
+  isMovable: boolean;
+  price?: number;
+}
+
+export interface InventorySummaryItem {
+  inventoryId: string;
+  itemName: string;
+  resourceType: string;
+  currentStock: number;
+  isMovable: boolean;
 }
 
 export const lookupInventoryItem = async (
@@ -40,6 +50,23 @@ export const lookupInventoryItem = async (
     return body.success && body.data ? body.data : null;
   } catch {
     return null;
+  }
+};
+
+export const getFacilityInventorySummary = async (
+  facilityId: string
+): Promise<InventorySummaryItem[]> => {
+  try {
+    const url = new URL(`${base()}/inventory/summary`);
+    url.searchParams.set('facilityId', facilityId);
+
+    const response = await fetch(url.toString());
+    if (!response.ok) return [];
+
+    const body = (await response.json()) as ApiResponse<InventorySummaryItem[]>;
+    return body.success && body.data ? body.data : [];
+  } catch {
+    return [];
   }
 };
 
@@ -102,5 +129,26 @@ export const recordInternalStockMovement = async (
     console.error(
       `[coordination] Failed to record ${movementType} movement for inventory ${inventoryId}`
     );
+  }
+};
+
+export interface FacilityLookupResult {
+  id: string;
+  name: string;
+  type: string;
+  latitude: number;
+  longitude: number;
+}
+
+export const getFacilityDetails = async (
+  facilityId: string
+): Promise<FacilityLookupResult | null> => {
+  try {
+    const response = await fetch(`${env.FACILITY_SERVICE_URL}/facilities/${facilityId}`);
+    if (!response.ok) return null;
+    const body = (await response.json()) as ApiResponse<FacilityLookupResult>;
+    return body.success && body.data ? body.data : null;
+  } catch {
+    return null;
   }
 };
