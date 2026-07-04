@@ -113,14 +113,7 @@ function AppRoutes() {
               </SuspenseWrapper>
             }
           />
-          <Route
-            path="/network"
-            element={
-              <SuspenseWrapper>
-                <NetworkMapPage />
-              </SuspenseWrapper>
-            }
-          />
+
           <Route
             path="/network-directory"
             element={
@@ -177,14 +170,7 @@ function AppRoutes() {
               </SuspenseWrapper>
             }
           />
-          <Route
-            path="/settings"
-            element={
-              <SuspenseWrapper>
-                <SettingsPage />
-              </SuspenseWrapper>
-            }
-          />
+
           {/* FACILITY_ADMIN only */}
           <Route
             path="/users"
@@ -206,14 +192,7 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         >
-          <Route
-            path="/network"
-            element={
-              <SuspenseWrapper>
-                <NetworkMapPage />
-              </SuspenseWrapper>
-            }
-          />
+
           <Route
             path="/admin/dashboard"
             element={
@@ -243,6 +222,32 @@ function AppRoutes() {
             element={
               <SuspenseWrapper>
                 <AdminAuditLogsPage />
+              </SuspenseWrapper>
+            }
+          />
+        </Route>
+
+        {/* Shared layout routes for all authenticated roles */}
+        <Route
+          element={
+            <ProtectedRoute allowedRoles={[...ALL_ROLES]}>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            path="/network"
+            element={
+              <SuspenseWrapper>
+                <NetworkMapPage />
+              </SuspenseWrapper>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <SuspenseWrapper>
+                <SettingsPage />
               </SuspenseWrapper>
             }
           />
