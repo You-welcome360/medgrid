@@ -26,6 +26,7 @@ const NotificationsPage = lazy(() => import('@/pages/notifications'));
 const ReportsPage = lazy(() => import('@/pages/reports'));
 const SettingsPage = lazy(() => import('@/pages/settings'));
 const NetworkDirectoryPage = lazy(() => import('@/pages/network-directory'));
+const NetworkMapPage = lazy(() => import('@/pages/network-map'));
 const SOSDashboardPage = lazy(() => import('@/pages/sos-dashboard'));
 
 // Super admin pages
@@ -109,6 +110,14 @@ function AppRoutes() {
             element={
               <SuspenseWrapper>
                 <SOSDashboardPage />
+              </SuspenseWrapper>
+            }
+          />
+          <Route
+            path="/network"
+            element={
+              <SuspenseWrapper>
+                <NetworkMapPage />
               </SuspenseWrapper>
             }
           />

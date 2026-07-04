@@ -9,6 +9,7 @@ import { requestRouter } from './modules/request';
 import { onboardingRouter } from './modules/onboarding';
 import { usersRouter } from './modules/users';
 import { auditRouter } from './modules/audit';
+import { notificationsRouter } from './modules/notifications/notifications.route';
 import { errorMiddleware } from './middlewares/error.middleware';
 import { notFoundMiddleware } from './middlewares/not-found.middleware';
 import { requestLoggerMiddleware } from './middlewares/request-logger.middleware';
@@ -45,6 +46,7 @@ export const createApp = () => {
   app.use('/api/v1/users', usersRouter);
 
   app.use('/api/v1/audit-logs', auditRouter);
+  app.use('/api/v1/notifications', notificationsRouter);
 
   app.post('/api/v1/internal/broadcast', (req, res) => {
     const secret = req.headers['x-internal-secret'];
