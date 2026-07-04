@@ -78,6 +78,7 @@ const adminNavItems = [
   { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Admin Dashboard' },
   { to: '/admin/approvals', icon: ClipboardCheck, label: 'Facility Approvals' },
   { to: '/admin/users', icon: Users, label: 'Users' },
+  { to: '/network', icon: Map, label: 'Network Map' },
   { to: '/admin/monitoring', icon: Monitor, label: 'System Monitoring' },
   { to: '/admin/reports', icon: BarChart3, label: 'Reports' },
   { to: '/admin/audit', icon: FileText, label: 'Audit Logs' },
@@ -163,6 +164,16 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
             </p>
             <p className="truncate text-[10px] text-indigo-400 uppercase tracking-wide font-semibold mt-0.5">
               {facility.type.replace('_', ' ')}
+            </p>
+          </div>
+        )}
+        {isSuperAdmin && (
+          <div className="mt-2 bg-indigo-950/40 border border-indigo-500/20 rounded-lg p-2">
+            <p className="truncate text-xs font-semibold text-indigo-200">
+              System Overwatch
+            </p>
+            <p className="truncate text-[10px] text-indigo-400 uppercase tracking-wide font-semibold mt-0.5">
+              Super Admin
             </p>
           </div>
         )}

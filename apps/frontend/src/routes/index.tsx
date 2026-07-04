@@ -207,6 +207,14 @@ function AppRoutes() {
           }
         >
           <Route
+            path="/network"
+            element={
+              <SuspenseWrapper>
+                <NetworkMapPage />
+              </SuspenseWrapper>
+            }
+          />
+          <Route
             path="/admin/dashboard"
             element={
               <SuspenseWrapper>
