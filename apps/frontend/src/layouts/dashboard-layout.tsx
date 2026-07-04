@@ -28,6 +28,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { useRole } from '@/hooks/use-role';
+import { useFacility } from '@/features/facilities/hooks/use-facilities';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -121,6 +122,8 @@ function NavItem({
 function Sidebar({ onClose }: { onClose?: () => void }) {
   const { user, logout } = useAuth();
   const { isSuperAdmin, isFacilityAdmin } = useRole();
+  const { data: facility } = useFacility(user?.facilityId ?? '');
+
   const items = isSuperAdmin
     ? adminNavItems
     : isFacilityAdmin
@@ -133,23 +136,35 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
 
   return (
     <div className="flex h-full flex-col bg-gray-950 text-white">
-      {/* Logo */}
-      <div className="flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white">
-            <span className="text-sm font-bold text-gray-950">M</span>
+      {/* Logo & Facility Info */}
+      <div className="flex flex-col border-b border-white/10 px-4 py-3">
+        <div className="flex h-10 items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-white">
+              <span className="text-xs font-bold text-gray-950">M</span>
+            </div>
+            <span className="font-semibold text-sm">MedGrid</span>
           </div>
-          <span className="font-semibold">MedGrid</span>
+          {onClose && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-gray-400 hover:text-white lg:hidden h-7 w-7"
+              onClick={onClose}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
-        {onClose && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-gray-400 hover:text-white lg:hidden"
-            onClick={onClose}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+        {facility && (
+          <div className="mt-2 bg-white/5 border border-white/10 rounded-lg p-2">
+            <p className="truncate text-xs font-semibold text-slate-200">
+              {facility.name}
+            </p>
+            <p className="truncate text-[10px] text-indigo-400 uppercase tracking-wide font-semibold mt-0.5">
+              {facility.type.replace('_', ' ')}
+            </p>
+          </div>
         )}
       </div>
 
