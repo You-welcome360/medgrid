@@ -46,6 +46,25 @@ export const createApp = () => {
 
   app.use('/api/v1/audit-logs', auditRouter);
 
+  app.post('/api/v1/internal/broadcast', (req, res) => {
+    const secret = req.headers['x-internal-secret'];
+    const expectedSecret = process.env.INTERNAL_SERVICE_SECRET || 'super_secret';
+
+    if (secret !== expectedSecret) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { event, room, data } = req.body;
+    if (!event || !room || data === undefined) {
+      return res.status(400).json({ success: false, message: 'Invalid payload' });
+    }
+
+    const { emitToRoom } = require('./socket');
+    emitToRoom(room, event, data);
+
+    return res.status(200).json({ success: true });
+  });
+
   app.use(notFoundMiddleware);
 
   app.use(errorMiddleware);
