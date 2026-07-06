@@ -10,6 +10,8 @@ MedGrid is a distributed microservice-based platform built to coordinate real-ti
 
 - **Real-time Inventory Tracking**: Direct control over stocks categorized by `BLOOD`, `MEDICATION`, `PPE`, and `MEDICAL_EQUIPMENT`.
 - **EMCON Network Directory**: Dynamic search panels mapping available supplies across regions, districts, and coordinates.
+- **Expiry Monitoring Scanner**: Automated daily background scans auditing inventory expiration timelines, issuing color-coded alerts (`SAFE`, `WARNING`, `CRITICAL`), and auto-publishing critical stocks as marketplace offers.
+- **Redistribution Marketplace**: Inter-facility dashboard listing nearby surplus inventories (sorted using Haversine distance calculation) for simplified resource claims and routing.
 - **Dynamic Access Enforcements**: Restricts resource generation based on facility profiles (e.g., Blood Banks are restricted to `BLOOD` inventory; Pharmacies are restricted to `MEDICATION`).
 - **Gateway Throttling**: Strict login rate limiting (max 5 requests per minute per IP/Email) defending the API gateway from brute-force intrusions.
 - **Inter-facility Request Workflows**: End-to-end request pipelines managing transfer requests, priority flags, transit statuses, and delivery confirmations.
@@ -23,22 +25,29 @@ MedGrid is designed as a distributed, high-performance monorepo using **Turborep
 
 ```
                   ┌───────────────────────┐
-                  │   Vite React Client   │
-                  └───────────┬───────────┘
-                              │ HTTPS
-                              ▼
-                  ┌───────────────────────┐
-                  │      API Gateway      │ (Auth Rate Limiter & Routing)
+                  │   Vite React Client   │◄── WebSocket (Socket.io Events)
+                  └───────────┬───────────┘              │
+                              │ HTTPS                    │
+                              ▼                          │
+                  ┌───────────────────────┐              │
+                  │      API Gateway      ├──────────────┘
+                  │ (Rate Limiting, Auth  │
+                  │  & Socket.io Server)  │
                   └─────┬─────┬─────┬─────┘
                         │     │     │
       ┌─────────────────┘     │     └─────────────────┐
       ▼                       ▼                       ▼
 ┌──────────────┐        ┌──────────────┐        ┌──────────────┐
 │ Auth Service │        │ Facility Svc │        │ Coord. Svc   │
-└──────────────┘        └──────────────┘        └──────────────┘
-      │                       │                       │
-      └─────────────────┐     │     ┌─────────────────┘
-                        ▼     ▼     ▼
+└──────────────┘        └──────┬───────┘        └──────────────┘
+                               │ (daily cron)
+                               ▼
+                        ┌──────────────┐
+                        │ Expiry Check │ (Background Alerts &
+                        │   Scanner    │  Redistribution Offers)
+                        └──────┬───────┘
+                               │
+                               ▼
                   ┌───────────────────────┐
                   │    PostgreSQL DB      │ (Shared Prisma Schema)
                   └───────────────────────┘
