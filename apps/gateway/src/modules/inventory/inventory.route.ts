@@ -20,6 +20,11 @@ import {
   getAlertsByInventoryController,
   getNetworkResourcesController,
   getNetworkFacilitiesController,
+  manualExpiryCheckController,
+  getExpiryAlertsController,
+  getRedistributionOffersController,
+  createRedistributionOfferController,
+  claimRedistributionOfferController,
 } from './inventory.controller';
 
 export const inventoryRouter = Router();
@@ -34,6 +39,11 @@ const anyAuthenticated = requireRole(
   UserRole.FACILITY_ADMIN,
   UserRole.COORDINATION_MANAGER,
   UserRole.INVENTORY_MANAGER
+);
+
+const canClaimRedistribution = requireRole(
+  UserRole.FACILITY_ADMIN,
+  UserRole.COORDINATION_MANAGER
 );
 
 // Inventory CRUD
@@ -60,6 +70,28 @@ inventoryRouter.get(
   '/network/facilities',
   anyAuthenticated,
   getNetworkFacilitiesController
+);
+
+// Expiry & Redistribution static paths
+inventoryRouter.post(
+  '/expiry/check',
+  anyAuthenticated,
+  manualExpiryCheckController
+);
+inventoryRouter.get(
+  '/alerts/expiry',
+  inventoryAccess,
+  getExpiryAlertsController
+);
+inventoryRouter.get(
+  '/redistribution/offers',
+  anyAuthenticated,
+  getRedistributionOffersController
+);
+inventoryRouter.post(
+  '/redistribution/offers/:offerId/claim',
+  canClaimRedistribution,
+  claimRedistributionOfferController
 );
 
 inventoryRouter.get('/:id', inventoryAccess, getInventoryItemController);
@@ -106,4 +138,11 @@ inventoryRouter.get(
   '/:id/alerts',
   inventoryAccess,
   getAlertsByInventoryController
+);
+
+// Manual redistribution offers creation
+inventoryRouter.post(
+  '/:id/redistribution/offers',
+  inventoryAccess,
+  createRedistributionOfferController
 );

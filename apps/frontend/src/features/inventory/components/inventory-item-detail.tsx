@@ -10,8 +10,13 @@ import {
   useSetReservedThreshold,
   useUpdatePrice,
   useDeleteInventoryItem,
+  useExpiryAlerts,
+  useCreateRedistributionOffer,
 } from '@/features/inventory/hooks/use-inventory';
 import { RecordMovementDialog } from './record-movement-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -62,6 +67,14 @@ export function InventoryItemDetail({ id }: InventoryItemDetailProps) {
   const updatePrice = useUpdatePrice();
   const deleteItem = useDeleteInventoryItem();
 
+  const { data: expiryAlerts = [] } = useExpiryAlerts();
+  const createOffer = useCreateRedistributionOffer();
+  const [postDialogOpen, setPostDialogOpen] = useState(false);
+  const [postQuantity, setPostQuantity] = useState('1');
+  const [postPrice, setPostPrice] = useState('0');
+
+  const activeExpiryAlert = expiryAlerts.find((a: any) => a.inventoryId === id && !a.resolvedAt);
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -92,7 +105,7 @@ export function InventoryItemDetail({ id }: InventoryItemDetailProps) {
                 {item.resourceType.replace('_', ' ')}
               </p>
               <h2 className="mt-1 text-2xl font-semibold">{item.itemName}</h2>
-              <div className="mt-2 flex items-center gap-2">
+              <div className="mt-2 flex items-center gap-2 flex-wrap">
                 <InventoryStatusBadge status={item.status} />
                 {isLow && (
                   <span className="flex items-center gap-1 text-xs text-orange-600">
@@ -100,9 +113,34 @@ export function InventoryItemDetail({ id }: InventoryItemDetailProps) {
                     Low stock
                   </span>
                 )}
+                {activeExpiryAlert && (
+                  <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold border ${
+                    activeExpiryAlert.severity === 'CRITICAL'
+                      ? 'bg-red-500/15 text-red-700 border-red-500/30'
+                      : 'bg-amber-500/15 text-amber-700 border-amber-500/30'
+                  }`}>
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    Expiry Alert: {activeExpiryAlert.severity} ({activeExpiryAlert.daysToExpiry} days left)
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex gap-2">
+              {activeExpiryAlert?.severity === 'WARNING' && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setPostQuantity('1');
+                    setPostPrice('0');
+                    setPostDialogOpen(true);
+                  }}
+                  className="text-indigo-600 border-indigo-200 hover:bg-indigo-50 dark:text-indigo-400 dark:border-indigo-900/30 dark:hover:bg-indigo-950/30"
+                >
+                  <Plus className="mr-1.5 h-4 w-4" />
+                  Post to Marketplace
+                </Button>
+              )}
               <Button size="sm" onClick={() => setMovementOpen(true)}>
                 <Plus className="mr-1.5 h-4 w-4" />
                 Record Movement
@@ -347,6 +385,78 @@ export function InventoryItemDetail({ id }: InventoryItemDetailProps) {
         open={movementOpen}
         onOpenChange={setMovementOpen}
       />
+
+      <Dialog open={postDialogOpen} onOpenChange={setPostDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Post Redistribution Offer</DialogTitle>
+            <DialogDescription>
+              Submit details to offer this inventory batch for inter-facility redistribution.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              createOffer.mutate(
+                {
+                  inventoryId: id,
+                  quantity: parseInt(postQuantity),
+                  price: parseFloat(postPrice),
+                },
+                {
+                  onSuccess: () => {
+                    setPostDialogOpen(false);
+                  },
+                }
+              );
+            }}
+            className="space-y-4 py-2"
+          >
+            <div className="space-y-1">
+              <span className="text-xs text-muted-foreground block">Item Name</span>
+              <span className="font-semibold text-sm capitalize">{item.itemName}</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="postQuantity">Quantity to Offer</Label>
+                <Input
+                  id="postQuantity"
+                  type="number"
+                  min={1}
+                  value={postQuantity}
+                  onChange={(e) => setPostQuantity(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="postPrice">Price per Unit (GH₵)</Label>
+                <Input
+                  id="postPrice"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={postPrice}
+                  onChange={(e) => setPostPrice(e.target.value)}
+                  required
+                />
+                <span className="text-[10px] text-muted-foreground block">Set to 0 for donation</span>
+              </div>
+            </div>
+
+            <DialogFooter className="pt-4">
+              <Button type="button" variant="outline" onClick={() => setPostDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createOffer.isPending}>
+                {createOffer.isPending ? 'Posting...' : 'Post Offer'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -16,6 +16,8 @@ const KEYS = {
   detail: (id: string) => ['inventory', id] as const,
   movements: (id: string) => ['inventory', id, 'movements'] as const,
   alerts: ['inventory', 'alerts'] as const,
+  expiryAlerts: ['inventory', 'alerts', 'expiry'] as const,
+  redistributionOffers: ['inventory', 'redistribution', 'offers'] as const,
   networkResources: ['inventory', 'network', 'resources'] as const,
   networkFacilities: (resourceType: ResourceType, itemName?: string) =>
     ['inventory', 'network', 'facilities', resourceType, itemName] as const,
@@ -184,6 +186,71 @@ export function useNetworkFacilities(resourceType: ResourceType, itemName?: stri
     queryFn: () => inventoryApi.getNetworkFacilities(resourceType, itemName),
     select: (res) => res.data ?? [],
     enabled: !!resourceType,
+  });
+}
+
+export function useExpiryAlerts() {
+  return useQuery({
+    queryKey: KEYS.expiryAlerts,
+    queryFn: () => inventoryApi.getExpiryAlerts(),
+    select: (res) => res.data ?? [],
+  });
+}
+
+export function useRedistributionOffers() {
+  return useQuery({
+    queryKey: KEYS.redistributionOffers,
+    queryFn: () => inventoryApi.getRedistributionOffers(),
+    select: (res) => res.data ?? [],
+  });
+}
+
+export function useTriggerExpiryCheck() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => inventoryApi.triggerExpiryCheck(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEYS.all });
+      qc.invalidateQueries({ queryKey: KEYS.expiryAlerts });
+      qc.invalidateQueries({ queryKey: KEYS.redistributionOffers });
+      toast.success('Manual expiry check completed');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useCreateRedistributionOffer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      inventoryId,
+      quantity,
+      price,
+    }: {
+      inventoryId: string;
+      quantity: number;
+      price: number;
+    }) => inventoryApi.createRedistributionOffer(inventoryId, { quantity, price }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEYS.all });
+      qc.invalidateQueries({ queryKey: KEYS.redistributionOffers });
+      toast.success('Redistribution offer created successfully');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useClaimRedistributionOffer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (offerId: string) => inventoryApi.claimRedistributionOffer(offerId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEYS.all });
+      qc.invalidateQueries({ queryKey: KEYS.redistributionOffers });
+      qc.invalidateQueries({ queryKey: ['requests'] });
+      toast.success('Redistribution offer claimed! Finalize your resource request.');
+    },
+    onError: (err: Error) => toast.error(err.message),
   });
 }
 

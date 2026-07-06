@@ -294,3 +294,78 @@ export const updateInventoryPriceInFacilityService = async (
   return response.json() as Promise<ApiResponse<any>>;
 };
 
+export const triggerExpiryCheckInFacilityService = async (
+  headers: InventoryHeaders
+): Promise<ApiResponse<any>> => {
+  const response = await fetch(`${base()}/expiry/check`, {
+    method: 'POST',
+    headers: {
+      Authorization: headers.authorizationHeader ?? '',
+      'x-facility-id': headers.facilityId,
+      'x-user-id': headers.userId,
+    },
+  });
+  return response.json() as Promise<ApiResponse<any>>;
+};
+
+export const getExpiryAlertsFromFacilityService = async (
+  headers: InventoryHeaders
+): Promise<ApiResponse<any[]>> => {
+  const response = await fetch(`${base()}/alerts/expiry`, {
+    method: 'GET',
+    headers: {
+      Authorization: headers.authorizationHeader ?? '',
+      'x-facility-id': headers.facilityId,
+      'x-user-id': headers.userId,
+    },
+  });
+  return response.json() as Promise<ApiResponse<any[]>>;
+};
+
+export const getRedistributionOffersFromFacilityService = async (
+  headers: InventoryHeaders
+): Promise<ApiResponse<any[]>> => {
+  const response = await fetch(`${base()}/redistribution/offers`, {
+    method: 'GET',
+    headers: {
+      Authorization: headers.authorizationHeader ?? '',
+      'x-facility-id': headers.facilityId,
+      'x-user-id': headers.userId,
+    },
+  });
+  return response.json() as Promise<ApiResponse<any[]>>;
+};
+
+export const createRedistributionOfferInFacilityService = async (
+  inventoryId: string,
+  data: { quantity: number; price: number },
+  headers: InventoryHeaders
+): Promise<ApiResponse<any>> => {
+  const response = await fetch(`${base()}/${inventoryId}/redistribution/offers`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: headers.authorizationHeader ?? '',
+      'x-facility-id': headers.facilityId,
+      'x-user-id': headers.userId,
+    },
+    body: JSON.stringify(data),
+  });
+  return response.json() as Promise<ApiResponse<any>>;
+};
+
+export const claimRedistributionOfferInFacilityService = async (
+  offerId: string,
+  headers: InventoryHeaders
+): Promise<ApiResponse<any>> => {
+  const response = await fetch(`${base()}/redistribution/offers/${offerId}/claim`, {
+    method: 'POST',
+    headers: {
+      Authorization: headers.authorizationHeader ?? '',
+      'x-facility-id': headers.facilityId,
+      'x-user-id': headers.userId,
+    },
+  });
+  return response.json() as Promise<ApiResponse<any>>;
+};
+

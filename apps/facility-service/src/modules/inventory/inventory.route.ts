@@ -16,6 +16,11 @@ import {
   getAlertsByInventoryController,
   getNetworkResourcesController,
   getNetworkFacilitiesController,
+  manualExpiryCheckController,
+  getExpiryAlertsController,
+  getRedistributionOffersController,
+  createRedistributionOfferController,
+  claimRedistributionOfferController,
 } from './inventory.controller';
 
 export const inventoryRouter = Router();
@@ -29,6 +34,12 @@ inventoryRouter.get('/alerts/active', getActiveAlertsController);
 inventoryRouter.get('/available', getAvailableInventoryController);
 inventoryRouter.get('/network/resources', getNetworkResourcesController);
 inventoryRouter.get('/network/facilities', getNetworkFacilitiesController);
+
+// Expiry & Redistribution static paths
+inventoryRouter.post('/expiry/check', manualExpiryCheckController);
+inventoryRouter.get('/alerts/expiry', getExpiryAlertsController);
+inventoryRouter.get('/redistribution/offers', getRedistributionOffersController);
+inventoryRouter.post('/redistribution/offers/:offerId/claim', claimRedistributionOfferController);
 
 inventoryRouter.get('/:id', getInventoryItemController);
 inventoryRouter.patch('/:id/status', updateInventoryStatusController);
@@ -48,3 +59,6 @@ inventoryRouter.get('/:id/movements', getStockMovementsController);
 
 // Alert history per item
 inventoryRouter.get('/:id/alerts', getAlertsByInventoryController);
+
+// Manual redistribution offers creation
+inventoryRouter.post('/:id/redistribution/offers', createRedistributionOfferController);

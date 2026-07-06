@@ -28,6 +28,7 @@ const SettingsPage = lazy(() => import('@/pages/settings'));
 const NetworkDirectoryPage = lazy(() => import('@/pages/network-directory'));
 const NetworkMapPage = lazy(() => import('@/pages/network-map'));
 const SOSDashboardPage = lazy(() => import('@/pages/sos-dashboard'));
+const RedistributionPage = lazy(() => import('@/pages/redistribution'));
 
 // Super admin pages
 const AdminDashboardPage = lazy(() => import('@/pages/admin/dashboard'));
@@ -135,6 +136,14 @@ function AppRoutes() {
             element={
               <SuspenseWrapper>
                 <InventoryPage />
+              </SuspenseWrapper>
+            }
+          />
+          <Route
+            path="/redistribution"
+            element={
+              <SuspenseWrapper>
+                <RedistributionPage />
               </SuspenseWrapper>
             }
           />

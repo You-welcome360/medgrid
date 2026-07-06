@@ -91,6 +91,9 @@ export function CreateRequestForm({ onSuccess }: CreateRequestFormProps) {
       supplyingFacilityId?: string;
       resourceType?: ResourceType;
       itemName?: string;
+      quantity?: number;
+      unit?: string;
+      description?: string;
     };
   };
 
@@ -101,8 +104,9 @@ export function CreateRequestForm({ onSuccess }: CreateRequestFormProps) {
       supplyingFacilityId: state?.supplyingFacilityId ?? '',
       itemName: state?.itemName ?? '',
       priority: 'MEDIUM',
-      unit: 'UNITS',
-      quantity: 1,
+      unit: (state?.unit as any) ?? 'UNITS',
+      quantity: state?.quantity ?? 1,
+      description: state?.description ?? '',
     },
   });
 

@@ -462,6 +462,8 @@ model Inventory {
   facility       Facility        @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   stockMovements StockMovement[]
   lowStockAlerts LowStockAlert[]
+  expiryAlerts   ExpiryAlert[]
+  redistributionOffers RedistributionOffer[]
 
   @@index([facilityId])
   @@index([resourceType])
@@ -754,4 +756,54 @@ model UserNotificationPreference {
 
   @@unique([userId, channel])
   @@index([userId])
+}
+
+enum ExpirySeverity {
+  SAFE
+  WARNING
+  CRITICAL
+}
+
+enum RedistributionStatus {
+  OPEN
+  CLAIMED
+  CANCELLED
+  EXPIRED
+}
+
+model ExpiryAlert {
+  id           String         @id @default(uuid())
+  inventoryId  String
+  facilityId   String
+  expiryDate   DateTime
+  daysToExpiry Int
+  severity     ExpirySeverity
+  resolvedAt   DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  inventory    Inventory      @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  @@index([inventoryId])
+  @@index([facilityId])
+  @@index([severity])
+}
+
+model RedistributionOffer {
+  id           String               @id @default(uuid())
+  inventoryId  String
+  facilityId   String
+  quantity     Int
+  unit         InventoryUnit
+  price        Decimal?             @db.Decimal(10, 2)
+  status       RedistributionStatus @default(OPEN)
+  expiresAt    DateTime
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  inventory    Inventory            @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  @@index([inventoryId])
+  @@index([facilityId])
+  @@index([status])
 }

@@ -25,6 +25,11 @@ import {
   getNetworkResourcesFromFacilityService,
   getNetworkFacilitiesFromFacilityService,
   updateInventoryPriceInFacilityService,
+  triggerExpiryCheckInFacilityService,
+  getExpiryAlertsFromFacilityService,
+  getRedistributionOffersFromFacilityService,
+  createRedistributionOfferInFacilityService,
+  claimRedistributionOfferInFacilityService,
 } from '../../clients/facility';
 
 // ===========================================================================
@@ -382,6 +387,88 @@ export const setPriceController = async (
     );
 
     return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const manualExpiryCheckController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const response = await triggerExpiryCheckInFacilityService(
+      getInventoryHeaders(req, res)
+    );
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getExpiryAlertsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const response = await getExpiryAlertsFromFacilityService(
+      getInventoryHeaders(req, res)
+    );
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getRedistributionOffersController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const response = await getRedistributionOffersFromFacilityService(
+      getInventoryHeaders(req, res)
+    );
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const createRedistributionOfferController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params['id'] as string;
+    const { quantity, price } = req.body;
+
+    const response = await createRedistributionOfferInFacilityService(
+      id,
+      { quantity: Number(quantity), price: Number(price) },
+      getInventoryHeaders(req, res)
+    );
+    return res.status(201).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const claimRedistributionOfferController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const offerId = req.params['offerId'] as string;
+    const headers = getInventoryHeaders(req, res);
+
+    const claimRes = await claimRedistributionOfferInFacilityService(offerId, headers);
+
+    return res.status(200).json(claimRes);
   } catch (error) {
     return next(error);
   }

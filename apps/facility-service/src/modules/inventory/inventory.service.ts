@@ -504,3 +504,102 @@ export const updateInventoryPrice = async (
   return toInventoryItemDTO(item);
 };
 
+export const getExpiryAlerts = async (facilityId: string) => {
+  return prisma.expiryAlert.findMany({
+    where: {
+      facilityId,
+      resolvedAt: null,
+    },
+    include: {
+      inventory: true,
+    },
+    orderBy: {
+      daysToExpiry: 'asc',
+    },
+  });
+};
+
+export const getRedistributionOffers = async () => {
+  return prisma.redistributionOffer.findMany({
+    where: {
+      status: 'OPEN',
+    },
+    include: {
+      inventory: {
+        include: {
+          facility: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+};
+
+export const createRedistributionOffer = async (
+  inventoryId: string,
+  facilityId: string,
+  quantity: number,
+  price: number
+) => {
+  const inventory = await findInventoryById(inventoryId);
+  if (!inventory) {
+    throw createNotFoundError('Inventory item not found');
+  }
+  if (inventory.facilityId !== facilityId) {
+    throw createAuthorizationError('Access denied');
+  }
+
+  const metadata = inventory.metadata as Record<string, any>;
+  const expiryDate = metadata && metadata.expiryDate ? new Date(metadata.expiryDate) : new Date();
+
+  // Check if there is already an open offer
+  const existingOffer = await prisma.redistributionOffer.findFirst({
+    where: {
+      inventoryId,
+      status: 'OPEN',
+    },
+  });
+
+  if (existingOffer) {
+    throw createValidationError('An open redistribution offer already exists for this item');
+  }
+
+  return prisma.redistributionOffer.create({
+    data: {
+      inventoryId,
+      facilityId,
+      quantity,
+      unit: inventory.unit,
+      price,
+      status: 'OPEN',
+      expiresAt: expiryDate,
+    },
+  });
+};
+
+export const claimRedistributionOffer = async (
+  offerId: string
+) => {
+  const offer = await prisma.redistributionOffer.findUnique({
+    where: { id: offerId },
+  });
+
+  if (!offer) {
+    throw createNotFoundError('Redistribution offer not found');
+  }
+
+  if (offer.status !== 'OPEN') {
+    throw createValidationError('This offer is no longer open');
+  }
+
+  return prisma.redistributionOffer.update({
+    where: { id: offerId },
+    data: { status: 'CLAIMED' },
+    include: {
+      inventory: true,
+    },
+  });
+};
+

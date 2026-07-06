@@ -23,6 +23,7 @@ import {
   Globe,
   Radio,
   Wallet,
+  RefreshCw,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -40,6 +41,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { SOSPanicButton } from '@/components/shared/sos-panic-button';
+import { useNotifications } from '@/hooks/use-notifications';
 
 // ============================================================
 // Nav items per role
@@ -50,6 +52,7 @@ const facilityNavItems = [
   { to: '/sos-dashboard', icon: Radio, label: 'SOS Broadcasts' },
   { to: '/requests', icon: ArrowLeftRight, label: 'Requests' },
   { to: '/inventory', icon: Package, label: 'Inventory' },
+  { to: '/redistribution', icon: RefreshCw, label: 'Redistribution' },
   { to: '/balance', icon: Wallet, label: 'Balance' },
   { to: '/facilities', icon: Building2, label: 'Facilities' },
   { to: '/network', icon: Map, label: 'Network Map' },
@@ -64,6 +67,7 @@ const facilityAdminNavItems = [
   { to: '/sos-dashboard', icon: Radio, label: 'SOS Broadcasts' },
   { to: '/requests', icon: ArrowLeftRight, label: 'Requests' },
   { to: '/inventory', icon: Package, label: 'Inventory' },
+  { to: '/redistribution', icon: RefreshCw, label: 'Redistribution' },
   { to: '/balance', icon: Wallet, label: 'Balance' },
   { to: '/facilities', icon: Building2, label: 'Facilities' },
   { to: '/users', icon: Users, label: 'Team' },
@@ -93,25 +97,30 @@ function NavItem({
   to,
   icon: Icon,
   label,
+  badge,
 }: {
   to: string;
   icon: React.ElementType;
   label: string;
+  badge?: React.ReactNode;
 }) {
   return (
     <NavLink
       to={to}
       className={({ isActive }) =>
         cn(
-          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+          'flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors',
           isActive
             ? 'bg-white/10 text-white'
             : 'text-gray-400 hover:bg-white/5 hover:text-white'
         )
       }
     >
-      <Icon className="h-4 w-4 shrink-0" />
-      {label}
+      <div className="flex items-center gap-3">
+        <Icon className="h-4 w-4 shrink-0" />
+        {label}
+      </div>
+      {badge}
     </NavLink>
   );
 }
@@ -124,6 +133,14 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
   const { user, logout } = useAuth();
   const { isSuperAdmin, isFacilityAdmin } = useRole();
   const { data: facility } = useFacility(user?.facilityId ?? '');
+
+  const { data: unreadData } = useNotifications({
+    page: 1,
+    limit: 1,
+    read: false,
+  });
+
+  const unreadCount = unreadData?.pagination?.total ?? 0;
 
   const items = isSuperAdmin
     ? adminNavItems
@@ -181,9 +198,17 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
 
       {/* Nav */}
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {items.map((item) => (
-          <NavItem key={item.to} {...item} />
-        ))}
+        {items.map((item) => {
+          let badge = undefined;
+          if (item.to === '/notifications' && unreadCount > 0) {
+            badge = (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1.5 text-[10px] font-bold text-white leading-none">
+                {unreadCount}
+              </span>
+            );
+          }
+          return <NavItem key={item.to} {...item} badge={badge} />;
+        })}
       </nav>
 
       {/* User footer */}

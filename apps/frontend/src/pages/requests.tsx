@@ -22,7 +22,7 @@ import { useState } from 'react';
 
 function RequestsList() {
   const navigate = useNavigate();
-  const { isCoordinationManager } = useRole();
+  const { isCoordinationManager, isFacilityAdmin } = useRole();
   const [activeTab, setActiveTab] = useState<RequestStatus | 'ALL'>('ALL');
 
   const { data: requests = [], isLoading } = useRequests(
@@ -35,7 +35,7 @@ function RequestsList() {
         title="Requests"
         description="Resource coordination requests"
         action={
-          isCoordinationManager ? (
+          isCoordinationManager || isFacilityAdmin ? (
             <Button onClick={() => navigate('/requests/new')}>
               <Plus className="mr-2 h-4 w-4" />
               Create Request
@@ -109,6 +109,19 @@ function RequestDetailPage() {
 
 function CreateRequestPage() {
   const navigate = useNavigate();
+  const { isCoordinationManager, isFacilityAdmin } = useRole();
+
+  if (!isCoordinationManager && !isFacilityAdmin) {
+    return (
+      <div className="py-16 text-center text-muted-foreground space-y-4">
+        <p className="font-semibold text-lg">Access Denied</p>
+        <p className="text-sm">You do not have permission to create resource coordination requests.</p>
+        <Button variant="outline" onClick={() => navigate('/requests')}>
+          ← Back to requests
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -21,8 +21,11 @@ import {
 
 export const requestRouter = Router();
 
-// COORDINATION_MANAGER creates requests
-const canCreate = requireRole(UserRole.COORDINATION_MANAGER);
+// COORDINATION_MANAGER or FACILITY_ADMIN creates requests
+const canCreate = requireRole(
+  UserRole.COORDINATION_MANAGER,
+  UserRole.FACILITY_ADMIN
+);
 
 // Supplier-side: FACILITY_ADMIN or COORDINATION_MANAGER of the supplying facility
 const supplierAction = requireRole(

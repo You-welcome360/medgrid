@@ -85,5 +85,17 @@ export const inventoryApi = {
     if (itemName) query.set('itemName', itemName);
     return api.get<NetworkFacilityItem[]>(`/inventory/network/facilities?${query.toString()}`);
   },
+
+  triggerExpiryCheck: () => api.post<any>('/inventory/expiry/check'),
+
+  getExpiryAlerts: () => api.get<any[]>('/inventory/alerts/expiry'),
+
+  getRedistributionOffers: () => api.get<any[]>('/inventory/redistribution/offers'),
+
+  createRedistributionOffer: (inventoryId: string, data: { quantity: number; price: number }) =>
+    api.post<any>(`/inventory/${inventoryId}/redistribution/offers`, data),
+
+  claimRedistributionOffer: (offerId: string) =>
+    api.post<any>(`/inventory/redistribution/offers/${offerId}/claim`),
 };
 

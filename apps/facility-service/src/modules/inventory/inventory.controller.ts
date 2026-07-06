@@ -30,7 +30,12 @@ import {
   getAvailableInventoryForFacility,
   getNetworkResources,
   getResourceFacilities,
+  getExpiryAlerts,
+  getRedistributionOffers,
+  createRedistributionOffer,
+  claimRedistributionOffer,
 } from './inventory.service';
+import { runExpiryCheck } from './expiry.cron';
 
 // ===========================================================================
 // Inventory CRUD
@@ -498,6 +503,129 @@ export const setPriceController = async (
       success: true,
       message: 'Inventory price updated successfully',
       data: item,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const manualExpiryCheckController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const result = await runExpiryCheck();
+
+    const response: ApiResponse<any> = {
+      success: true,
+      message: 'Manual expiry scanning executed successfully',
+      data: result,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getExpiryAlertsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const facilityId = req.headers['x-facility-id'] as string;
+    const alerts = await getExpiryAlerts(facilityId);
+
+    const response: ApiResponse<any[]> = {
+      success: true,
+      message: 'Active expiry alerts retrieved successfully',
+      data: alerts,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getRedistributionOffersController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const offers = await getRedistributionOffers();
+
+    const response: ApiResponse<any[]> = {
+      success: true,
+      message: 'Redistribution offers retrieved successfully',
+      data: offers,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const createRedistributionOfferController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const inventoryId = req.params['id'] as string;
+    const facilityId = req.headers['x-facility-id'] as string;
+    const { quantity, price } = req.body;
+
+    if (quantity === undefined || isNaN(Number(quantity)) || Number(quantity) <= 0) {
+      return next(createValidationError('Quantity must be a positive number'));
+    }
+    if (price === undefined || isNaN(Number(price)) || Number(price) < 0) {
+      return next(createValidationError('Price must be a non-negative number'));
+    }
+
+    const offer = await createRedistributionOffer(
+      inventoryId,
+      facilityId,
+      Number(quantity),
+      Number(price)
+    );
+
+    const response: ApiResponse<any> = {
+      success: true,
+      message: 'Redistribution offer created successfully',
+      data: offer,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(201).json(response);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const claimRedistributionOfferController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const offerId = req.params['offerId'] as string;
+    const offer = await claimRedistributionOffer(offerId);
+
+    const response: ApiResponse<any> = {
+      success: true,
+      message: 'Redistribution offer claimed successfully',
+      data: offer,
       timestamp: new Date().toISOString(),
     };
 
