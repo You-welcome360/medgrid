@@ -42,7 +42,57 @@ export const getFacilityById = async (id: string) => {
   return toFacilityDTO(facility);
 };
 
+export const verifyPendingTransactions = async (facilityId: string) => {
+  const pendingTransactions = await prisma.balanceTransaction.findMany({
+    where: {
+      facilityId,
+      status: 'pending',
+      paymentMethod: 'paystack',
+    },
+  });
+
+  for (const tx of pendingTransactions) {
+    if (!tx.reference) continue;
+    try {
+      const result = await PaystackService.verifyTransaction(tx.reference);
+      if (result.status === 'success') {
+        await prisma.$transaction(async (txClient) => {
+          const freshTx = await txClient.balanceTransaction.findUnique({
+            where: { id: tx.id },
+          });
+          if (freshTx && freshTx.status === 'pending') {
+            await txClient.balanceTransaction.update({
+              where: { id: tx.id },
+              data: { status: 'success' },
+            });
+
+            const updatedFacility = await txClient.facility.update({
+              where: { id: facilityId },
+              data: { balance: { increment: tx.amount } },
+            });
+
+            notifyBalanceTopup(facilityId, Number(tx.amount), Number(updatedFacility.balance ?? 0)).catch((err) =>
+              console.error('[Verification] Topup notify failed:', err.message)
+            );
+          }
+        });
+      } else if (result.status === 'failed') {
+        await prisma.balanceTransaction.update({
+          where: { id: tx.id },
+          data: { status: 'failed' },
+        });
+      }
+    } catch (error: any) {
+      console.error(`[Verification] Error verifying transaction ${tx.reference}:`, error.message);
+    }
+  }
+};
+
 export const getFacilityBalance = async (facilityId: string) => {
+  await verifyPendingTransactions(facilityId).catch((err) =>
+    console.error('[Verification] verifyPendingTransactions failed:', err.message)
+  );
+
   const facility = await prisma.facility.findUnique({
     where: { id: facilityId },
     select: { id: true, balance: true },

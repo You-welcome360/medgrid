@@ -704,6 +704,12 @@ export const getBroadcastsForFacility = async (
   return filtered.map((b) => ({
     ...toResourceRequestDTO(b),
     distance: b.distance,
+    requestingFacilityName: b.requestingFacilityName,
+    requestingFacilityPhone: b.requestingFacilityPhone,
+    requestingFacilityEmail: b.requestingFacilityEmail,
+    requestingFacilityType: b.requestingFacilityType,
+    requestingFacilityRegion: b.requestingFacilityRegion,
+    requestingFacilityDistrict: b.requestingFacilityDistrict,
   } as any));
 };
 

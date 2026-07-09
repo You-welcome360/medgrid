@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useSocket } from '@/hooks/use-socket';
@@ -7,11 +7,8 @@ import {
   LayoutDashboard,
   ArrowLeftRight,
   Package,
-  Building2,
   Map,
   Bell,
-  BarChart3,
-  Settings,
   Users,
   ClipboardCheck,
   Monitor,
@@ -19,10 +16,8 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronDown,
   Globe,
   Radio,
-  Wallet,
   RefreshCw,
 } from 'lucide-react';
 
@@ -30,7 +25,6 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { useRole } from '@/hooks/use-role';
 import { useFacility } from '@/features/facilities/hooks/use-facilities';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -39,7 +33,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { SOSPanicButton } from '@/components/shared/sos-panic-button';
 import { useNotifications } from '@/hooks/use-notifications';
 
@@ -53,13 +47,8 @@ const facilityNavItems = [
   { to: '/requests', icon: ArrowLeftRight, label: 'Requests' },
   { to: '/inventory', icon: Package, label: 'Inventory' },
   { to: '/redistribution', icon: RefreshCw, label: 'Redistribution' },
-  { to: '/balance', icon: Wallet, label: 'Balance' },
-  { to: '/facilities', icon: Building2, label: 'Facilities' },
   { to: '/network', icon: Map, label: 'Network Map' },
   { to: '/network-directory', icon: Globe, label: 'Network Directory' },
-  { to: '/notifications', icon: Bell, label: 'Notifications' },
-  { to: '/reports', icon: BarChart3, label: 'Reports' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 const facilityAdminNavItems = [
@@ -68,14 +57,9 @@ const facilityAdminNavItems = [
   { to: '/requests', icon: ArrowLeftRight, label: 'Requests' },
   { to: '/inventory', icon: Package, label: 'Inventory' },
   { to: '/redistribution', icon: RefreshCw, label: 'Redistribution' },
-  { to: '/balance', icon: Wallet, label: 'Balance' },
-  { to: '/facilities', icon: Building2, label: 'Facilities' },
   { to: '/users', icon: Users, label: 'Team' },
   { to: '/network', icon: Map, label: 'Network Map' },
   { to: '/network-directory', icon: Globe, label: 'Network Directory' },
-  { to: '/notifications', icon: Bell, label: 'Notifications' },
-  { to: '/reports', icon: BarChart3, label: 'Reports' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 const adminNavItems = [
@@ -84,9 +68,7 @@ const adminNavItems = [
   { to: '/admin/users', icon: Users, label: 'Users' },
   { to: '/network', icon: Map, label: 'Network Map' },
   { to: '/admin/monitoring', icon: Monitor, label: 'System Monitoring' },
-  { to: '/admin/reports', icon: BarChart3, label: 'Reports' },
   { to: '/admin/audit', icon: FileText, label: 'Audit Logs' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 // ============================================================
@@ -109,10 +91,10 @@ function NavItem({
       to={to}
       className={({ isActive }) =>
         cn(
-          'flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors',
+          'flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors font-medium',
           isActive
-            ? 'bg-white/10 text-white'
-            : 'text-gray-400 hover:bg-white/5 hover:text-white'
+            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+            : 'text-sidebar-foreground/75 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
         )
       }
     >
@@ -130,7 +112,7 @@ function NavItem({
 // ============================================================
 
 function Sidebar({ onClose }: { onClose?: () => void }) {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { isSuperAdmin, isFacilityAdmin } = useRole();
   const { data: facility } = useFacility(user?.facilityId ?? '');
 
@@ -148,26 +130,22 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
       ? facilityAdminNavItems
       : facilityNavItems;
 
-  const initials = user
-    ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
-    : 'U';
-
   return (
-    <div className="flex h-full flex-col bg-gray-950 text-white">
+    <div className="flex h-full flex-col bg-sidebar border-r border-sidebar-border text-sidebar-foreground">
       {/* Logo & Facility Info */}
-      <div className="flex flex-col border-b border-white/10 px-4 py-3">
+      <div className="flex flex-col border-b border-sidebar-border px-4 py-3">
         <div className="flex h-10 items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-white">
-              <span className="text-xs font-bold text-gray-950">M</span>
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <span className="text-xs font-bold">M</span>
             </div>
-            <span className="font-semibold text-sm">MedGrid</span>
+            <span className="font-semibold text-sm text-sidebar-foreground">MedGrid</span>
           </div>
           {onClose && (
             <Button
               variant="ghost"
               size="icon"
-              className="text-gray-400 hover:text-white lg:hidden h-7 w-7"
+              className="text-sidebar-foreground/60 hover:text-sidebar-foreground lg:hidden h-7 w-7"
               onClick={onClose}
             >
               <X className="h-4 w-4" />
@@ -175,21 +153,21 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
           )}
         </div>
         {facility && (
-          <div className="mt-2 bg-white/5 border border-white/10 rounded-lg p-2">
-            <p className="truncate text-xs font-semibold text-slate-200">
+          <div className="mt-2 bg-sidebar-accent/40 border border-sidebar-border rounded-lg p-2">
+            <p className="truncate text-xs font-semibold text-sidebar-foreground">
               {facility.name}
             </p>
-            <p className="truncate text-[10px] text-indigo-400 uppercase tracking-wide font-semibold mt-0.5">
+            <p className="truncate text-[10px] text-primary uppercase tracking-wide font-semibold mt-0.5">
               {facility.type.replace('_', ' ')}
             </p>
           </div>
         )}
         {isSuperAdmin && (
-          <div className="mt-2 bg-indigo-950/40 border border-indigo-500/20 rounded-lg p-2">
-            <p className="truncate text-xs font-semibold text-indigo-200">
+          <div className="mt-2 bg-primary/10 border border-primary/20 rounded-lg p-2">
+            <p className="truncate text-xs font-semibold text-primary">
               System Overwatch
             </p>
-            <p className="truncate text-[10px] text-indigo-400 uppercase tracking-wide font-semibold mt-0.5">
+            <p className="truncate text-[10px] text-primary/80 uppercase tracking-wide font-semibold mt-0.5">
               Super Admin
             </p>
           </div>
@@ -202,7 +180,7 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
           let badge = undefined;
           if (item.to === '/notifications' && unreadCount > 0) {
             badge = (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1.5 text-[10px] font-bold text-white leading-none">
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground leading-none">
                 {unreadCount}
               </span>
             );
@@ -211,41 +189,6 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
         })}
       </nav>
 
-      {/* User footer */}
-      <div className="border-t border-white/10 p-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm hover:bg-white/5">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-white/10 text-white text-xs">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium text-white">
-                  {user?.firstName} {user?.lastName}
-                </p>
-                <p className="truncate text-xs text-gray-400">{user?.email}</p>
-              </div>
-              <ChevronDown className="h-3 w-3 text-gray-400" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="start" className="w-56">
-            <DropdownMenuItem onClick={() => {}}>Profile</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => {}}>
-              Change Password
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={logout}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
     </div>
   );
 }
@@ -257,7 +200,21 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
 export function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { isSuperAdmin } = useRole();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const { data: facility } = useFacility(user?.facilityId ?? '');
+  const { data: unreadData } = useNotifications({
+    page: 1,
+    limit: 1,
+    read: false,
+  });
+
+  const unreadCount = unreadData?.pagination?.total ?? 0;
+  const initials = user
+    ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+    : 'U';
 
   const socketEvents = useMemo(() => ({
     'request:created': (data: any) => {
@@ -305,20 +262,85 @@ export function DashboardLayout() {
 
       {/* Main */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Mobile topbar */}
-        <header className="flex h-14 items-center gap-3 border-b px-4 lg:hidden">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setMobileOpen(true)}
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-          </Sheet>
-          <span className="font-semibold">MedGrid</span>
+        {/* Topbar Header */}
+        <header className="flex h-14 items-center justify-between border-b border-border px-6 bg-background text-foreground shrink-0">
+          <div className="flex items-center gap-3">
+            {/* Mobile sidebar trigger */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden h-8 w-8"
+              onClick={() => setMobileOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            
+            <span className="font-semibold text-foreground hidden lg:inline">
+              {facility ? `${facility.name} • ${facility.type.replace('_', ' ')}` : 'System Management'}
+            </span>
+            <span className="font-semibold text-foreground lg:hidden">
+              {facility ? facility.name : 'MedGrid'}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {/* Notification button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative text-muted-foreground hover:text-foreground h-9 w-9 rounded-full"
+              onClick={() => navigate('/notifications')}
+            >
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+                  {unreadCount}
+                </span>
+              )}
+            </Button>
+
+            {/* Avatar Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2.5 rounded-lg focus:outline-none hover:opacity-90 cursor-pointer">
+                  <div className="h-8 w-8 border border-border shadow-sm bg-primary/10 text-primary text-xs font-bold flex items-center justify-center rounded-lg select-none">
+                    {initials}
+                  </div>
+                  <span className="hidden sm:inline text-sm font-medium text-foreground select-none">
+                    {user?.firstName} {user?.lastName}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="flex flex-col px-3 py-2 text-xs text-muted-foreground">
+                  <p className="font-semibold text-foreground">
+                    {user?.firstName} {user?.lastName}
+                  </p>
+                  <p className="truncate mt-0.5">{user?.email}</p>
+                  <p className="mt-1.5 inline-flex items-center rounded-md bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary w-fit">
+                    {user?.role?.replace('_', ' ')}
+                  </p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/settings')}>
+                  Settings
+                </DropdownMenuItem>
+                {user?.facilityId && (
+                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/balance')}>
+                    Balance
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive cursor-pointer"
+                  onClick={logout}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </header>
 
         {/* Page content */}

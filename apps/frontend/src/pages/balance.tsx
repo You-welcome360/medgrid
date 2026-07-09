@@ -87,37 +87,37 @@ export default function BalancePage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Balance Card */}
-        <Card className="md:col-span-2 relative overflow-hidden bg-gradient-to-br from-indigo-900/60 to-purple-900/40 border-indigo-500/20 backdrop-blur-md">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl -mr-12 -mt-12" />
+        <Card className="md:col-span-2 relative overflow-hidden bg-card border-border shadow-sm">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-3xl -mr-12 -mt-12" />
           <CardHeader className="relative z-10 pb-2">
-            <CardTitle className="text-gray-300 font-medium text-sm uppercase tracking-wider flex items-center gap-2">
-              <Coins className="h-4 w-4 text-indigo-400" />
+            <CardTitle className="text-muted-foreground font-medium text-sm uppercase tracking-wider flex items-center gap-2">
+              <Coins className="h-4 w-4 text-primary" />
               Available Funds
             </CardTitle>
           </CardHeader>
           <CardContent className="relative z-10 space-y-6">
             <div>
               {loadingBalance ? (
-                <div className="h-12 w-48 bg-slate-800/50 animate-pulse rounded my-2" />
+                <div className="h-12 w-48 bg-muted animate-pulse rounded my-2" />
               ) : (
-                <h1 className="text-5xl font-extrabold tracking-tight text-white flex items-baseline gap-2">
-                  <span className="text-indigo-400 text-3xl font-semibold">₵</span>
+                <h1 className="text-5xl font-extrabold tracking-tight text-foreground flex items-baseline gap-2">
+                  <span className="text-primary text-3xl font-semibold">₵</span>
                   {balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </h1>
               )}
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-muted-foreground mt-2">
                 Funds are automatically debited for request completions and credited for fulfillments.
               </p>
             </div>
             
-            <div className="flex gap-4 p-4 rounded-xl bg-slate-900/40 border border-slate-800">
+            <div className="flex gap-4 p-4 rounded-xl bg-muted/40 border border-border">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-green-500/10 text-green-400">
+                <div className="p-2 rounded-lg bg-green-500/10 text-green-600">
                   <TrendingUp className="h-5 w-5" />
                 </div>
                 <div>
-                  <div className="text-[10px] text-gray-500 uppercase font-semibold">Automatic Settlement</div>
-                  <div className="text-xs text-gray-300 font-medium mt-0.5">Enabled for all coordination operations</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-semibold">Automatic Settlement</div>
+                  <div className="text-xs text-foreground font-medium mt-0.5">Enabled for all coordination operations</div>
                 </div>
               </div>
             </div>
@@ -125,35 +125,35 @@ export default function BalancePage() {
         </Card>
 
         {/* Top-up Form Card */}
-        <Card className="border-slate-800 bg-slate-900/20 backdrop-blur-md">
+        <Card className="border-border bg-card shadow-sm">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-purple-400" />
+              <CreditCard className="h-4 w-4 text-primary" />
               Fund Account
             </CardTitle>
-            <CardDescription className="text-xs">
+            <CardDescription className="text-xs text-muted-foreground">
               Load balance instantly using Paystack.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleTopUp} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-xs text-gray-400 font-medium">Amount (GHS)</label>
+                <label className="text-xs text-muted-foreground font-medium">Amount (GHS)</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-gray-500 font-semibold text-sm">₵</span>
+                  <span className="absolute left-3 top-2.5 text-muted-foreground font-semibold text-sm">₵</span>
                   <Input
                     type="number"
                     step="any"
                     placeholder="0.00"
                     value={topUpAmount}
                     onChange={(e) => setTopUpAmount(e.target.value)}
-                    className="pl-7 bg-slate-950/50 border-slate-800 text-white focus-visible:ring-indigo-500"
+                    className="pl-7 bg-background border-border text-foreground focus-visible:ring-primary"
                   />
                 </div>
               </div>
               <Button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium"
+                className="w-full bg-primary hover:bg-primary/95 text-primary-foreground font-medium shadow-sm transition-colors duration-200"
                 disabled={topUpMutation.isPending}
               >
                 {topUpMutation.isPending ? (
@@ -170,12 +170,11 @@ export default function BalancePage() {
         </Card>
       </div>
 
-      {/* Transaction History Card */}
-      <Card className="border-slate-800 bg-slate-900/10">
+      <Card className="border-border bg-card shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
-            <CardTitle className="text-lg">Ledger & Transaction History</CardTitle>
-            <CardDescription className="text-xs">Audit log of all financial activities.</CardDescription>
+            <CardTitle className="text-lg text-foreground">Ledger & Transaction History</CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">Audit log of all financial activities.</CardDescription>
           </div>
           <div className="flex gap-2">
             <select
@@ -184,7 +183,7 @@ export default function BalancePage() {
                 setFilterType(e.target.value);
                 setPage(1);
               }}
-              className="bg-slate-950/60 border border-slate-800 text-xs rounded-lg px-2 py-1 text-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="bg-background border border-border text-xs rounded-lg px-2 py-1 text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             >
               <option value="">All Types</option>
               <option value="credit">Credit Only</option>
@@ -195,20 +194,20 @@ export default function BalancePage() {
         <CardContent>
           {loadingHistory ? (
             <div className="space-y-3 py-6">
-              <div className="h-10 bg-slate-800/50 animate-pulse rounded" />
-              <div className="h-10 bg-slate-800/50 animate-pulse rounded" />
-              <div className="h-10 bg-slate-800/50 animate-pulse rounded" />
+              <div className="h-10 bg-muted animate-pulse rounded" />
+              <div className="h-10 bg-muted animate-pulse rounded" />
+              <div className="h-10 bg-muted animate-pulse rounded" />
             </div>
           ) : transactions.length === 0 ? (
-            <div className="text-center py-12 text-gray-500 text-sm">
-              <Coins className="h-12 w-12 text-slate-700 mx-auto mb-3" />
+            <div className="text-center py-12 text-muted-foreground text-sm">
+              <Coins className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
               No transactions found.
             </div>
           ) : (
             <div className="space-y-4">
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left text-gray-300">
-                  <thead className="text-xs text-gray-400 uppercase bg-slate-950/40">
+                <table className="w-full text-sm text-left text-foreground">
+                  <thead className="text-xs text-muted-foreground uppercase bg-muted/50">
                     <tr>
                       <th className="px-4 py-3">Reference / Desc</th>
                       <th className="px-4 py-3">Date</th>
@@ -216,25 +215,42 @@ export default function BalancePage() {
                       <th className="px-4 py-3 text-right">Amount</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800">
+                  <tbody className="divide-y divide-border">
                     {transactions.map((tx: any) => {
                       const isCredit = tx.type === 'credit';
                       return (
-                        <tr key={tx.id} className="hover:bg-slate-900/30">
+                        <tr key={tx.id} className="hover:bg-muted/30">
                           <td className="px-4 py-3.5">
-                            <div className="font-medium text-white flex items-center gap-2">
+                            <div className="font-medium text-foreground flex items-center gap-2">
                               {isCredit ? (
-                                <ArrowDownLeft className="h-3.5 w-3.5 text-green-400 shrink-0" />
+                                <ArrowDownLeft className="h-3.5 w-3.5 text-green-600 shrink-0" />
                               ) : (
-                                <ArrowUpRight className="h-3.5 w-3.5 text-red-400 shrink-0" />
+                                <ArrowUpRight className="h-3.5 w-3.5 text-red-600 shrink-0" />
                               )}
                               <span>{tx.description}</span>
                             </div>
-                            <div className="text-[10px] text-gray-500 font-mono mt-0.5">{tx.reference}</div>
+                            <div className="text-[10px] text-muted-foreground font-mono mt-0.5 flex items-center gap-2">
+                              <span>{tx.reference}</span>
+                              {tx.status === 'pending' && (
+                                <span className="inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                                  Pending
+                                </span>
+                              )}
+                              {tx.status === 'success' && (
+                                <span className="inline-flex items-center rounded bg-green-100 px-1.5 py-0.5 text-[9px] font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                  Success
+                                </span>
+                              )}
+                              {tx.status === 'failed' && (
+                                <span className="inline-flex items-center rounded bg-rose-100 px-1.5 py-0.5 text-[9px] font-medium text-rose-800 dark:bg-rose-900/30 dark:text-rose-400">
+                                  Failed
+                                </span>
+                              )}
+                            </div>
                           </td>
-                          <td className="px-4 py-3.5 text-xs text-gray-400">
+                          <td className="px-4 py-3.5 text-xs text-muted-foreground">
                             <div className="flex items-center gap-1.5">
-                              <Calendar className="h-3 w-3 text-slate-500" />
+                              <Calendar className="h-3 w-3 text-muted-foreground" />
                               {new Date(tx.createdAt).toLocaleDateString(undefined, { 
                                 year: 'numeric', 
                                 month: 'short', 
@@ -245,12 +261,12 @@ export default function BalancePage() {
                             </div>
                           </td>
                           <td className="px-4 py-3.5 text-xs">
-                            <span className="capitalize px-2 py-0.5 rounded bg-slate-950/60 border border-slate-800 text-gray-400">
+                            <span className="capitalize px-2 py-0.5 rounded bg-muted border border-border text-muted-foreground">
                               {tx.paymentMethod}
                             </span>
                           </td>
                           <td className="px-4 py-3.5 text-right font-semibold">
-                            <span className={isCredit ? 'text-green-400' : 'text-red-400'}>
+                            <span className={isCredit ? 'text-green-600' : 'text-red-600'}>
                               {isCredit ? '+' : '-'} ₵{Math.abs(Number(tx.amount)).toFixed(2)}
                             </span>
                           </td>
@@ -263,15 +279,15 @@ export default function BalancePage() {
 
               {/* Pagination controls */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between border-t border-slate-800 pt-4">
-                  <div className="text-xs text-gray-500">
+                <div className="flex items-center justify-between border-t border-border pt-4">
+                  <div className="text-xs text-muted-foreground">
                     Showing page {page} of {totalPages} ({totalCount} total records)
                   </div>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="icon"
-                      className="h-8 w-8 border-slate-800 text-gray-400 hover:text-white"
+                      className="h-8 w-8 border-border text-muted-foreground hover:text-foreground"
                       disabled={page === 1}
                       onClick={() => setPage(p => p - 1)}
                     >
@@ -280,7 +296,7 @@ export default function BalancePage() {
                     <Button
                       variant="outline"
                       size="icon"
-                      className="h-8 w-8 border-slate-800 text-gray-400 hover:text-white"
+                      className="h-8 w-8 border-border text-muted-foreground hover:text-foreground"
                       disabled={page === totalPages}
                       onClick={() => setPage(p => p + 1)}
                     >

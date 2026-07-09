@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { getAccessToken } from '@/api/client';
+import { getAccessToken, BASE_URL } from '@/api/client';
 
 export function useSocket(events: Record<string, (data: any) => void>) {
   const socketRef = useRef<Socket | null>(null);
@@ -12,10 +12,9 @@ export function useSocket(events: Record<string, (data: any) => void>) {
     const token = getAccessToken();
     if (!token) return;
 
-    const baseApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
     let socketUrl = 'http://localhost:4000';
     try {
-      socketUrl = new URL(baseApiUrl).origin;
+      socketUrl = new URL(BASE_URL).origin;
     } catch {
       // fallback
     }

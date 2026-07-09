@@ -1,4 +1,17 @@
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1';
+const getBaseUrl = () => {
+  if (typeof window === 'undefined') {
+    return 'http://localhost:4000/api/v1';
+  }
+  const { hostname, port, protocol } = window.location;
+  // If loading from standard Vite dev ports, route to port 4000 on the same host
+  if (port === '5173' || port === '5174') {
+    return `${protocol}//${hostname}:4000/api/v1`;
+  }
+  // Otherwise, route relative to Nginx host serving on the active port
+  return `${protocol}//${hostname}${port ? `:${port}` : ''}/api/v1`;
+};
+
+export const BASE_URL = import.meta.env.VITE_API_URL ?? getBaseUrl();
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -31,6 +44,7 @@ async function request<T>(
 ): Promise<ApiResponse<T>> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
   };
 
   // Default to the global access token; explicit headers can override it

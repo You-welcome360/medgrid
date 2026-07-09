@@ -163,7 +163,14 @@ export async function notifyRequestCreated(requestId: string): Promise<void> {
     const req = await prisma.resourceRequest.findUnique({
       where: { id: requestId },
       include: {
-        requestingFacility: { select: { id: true, name: true } },
+        requestingFacility: {
+          select: {
+            id: true,
+            name: true,
+            latitude: true,
+            longitude: true,
+          },
+        },
       },
     });
     if (!req) return;
@@ -193,6 +200,115 @@ export async function notifyRequestCreated(requestId: string): Promise<void> {
 
     await notifyFacility(req.requestingFacilityId, payload, emailTpl, isEmergency);
     await broadcastSocketEvent('request:created', 'super_admin', { request_id: req.id, ...payload.data });
+
+    // If it is a broadcast request, also notify nearby facilities that have the drug in their inventory
+    if (req.isBroadcast) {
+      const candidates = await prisma.facility.findMany({
+        where: {
+          id: { not: req.requestingFacilityId },
+          status: 'ACTIVE',
+          inventories: {
+            some: {
+              resourceType: req.resourceType,
+              itemName: { equals: req.itemName, mode: 'insensitive' },
+              status: 'AVAILABLE',
+              deletedAt: null,
+            },
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          latitude: true,
+          longitude: true,
+          inventories: {
+            where: {
+              resourceType: req.resourceType,
+              itemName: { equals: req.itemName, mode: 'insensitive' },
+              status: 'AVAILABLE',
+              deletedAt: null,
+            },
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
+
+      const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+        const R = 6371; // km
+        const dLat = (lat2 - lat1) * (Math.PI / 180);
+        const dLon = (lon2 - lon1) * (Math.PI / 180);
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(lat1 * (Math.PI / 180)) *
+            Math.cos(lat2 * (Math.PI / 180)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+      };
+
+      const matchedFacilities: typeof candidates = [];
+
+      for (const facility of candidates) {
+        let totalQuantity = 0;
+        for (const item of facility.inventories) {
+          const result = await prisma.stockMovement.aggregate({
+            where: { inventoryId: item.id },
+            _sum: { quantity: true },
+          });
+          totalQuantity += result._sum.quantity ?? 0;
+        }
+
+        if (totalQuantity > 0) {
+          const distanceMatches = (() => {
+            if (req.maxRadiusKm === null) return true;
+            const distance = calculateDistance(
+              req.requestingFacility.latitude,
+              req.requestingFacility.longitude,
+              facility.latitude,
+              facility.longitude
+            );
+            return distance <= req.maxRadiusKm;
+          })();
+
+          if (distanceMatches) {
+            matchedFacilities.push(facility);
+          }
+        }
+      }
+
+      for (const facility of matchedFacilities) {
+        const broadcastTitle = isEmergency
+          ? `🚨 Broadcast Emergency Request: ${req.itemName}`
+          : `Broadcast Request: ${req.itemName}`;
+        const broadcastBody = `A nearby facility (${req.requestingFacility.name}) is looking for ${req.quantity} ${req.unit.toLowerCase()}(s) of ${req.itemName}, which you have in stock.`;
+
+        const broadcastPayload: NotifyPayload = {
+          type: NotificationType.REQUEST_CREATED,
+          title: broadcastTitle,
+          body: broadcastBody,
+          data: {
+            request_id: req.id,
+            classification: isEmergency ? 'emergency' : 'normal',
+            isBroadcastRecipient: true,
+          },
+          facilityId: facility.id,
+        };
+
+        const broadcastEmailTpl = requestCreatedEmail({
+          facilityName: req.requestingFacility.name,
+          resourceName: req.itemName,
+          quantity: req.quantity,
+          classification: isEmergency ? 'emergency' : 'normal',
+          urgencyLevel: req.priority,
+          status: req.status,
+        });
+
+        await notifyFacility(facility.id, broadcastPayload, broadcastEmailTpl, isEmergency);
+      }
+    }
   } catch (err: any) {
     console.error('[Notify] notifyRequestCreated failed:', err.message);
   }

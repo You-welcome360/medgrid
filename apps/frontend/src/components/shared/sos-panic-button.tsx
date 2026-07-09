@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Radio, Flame, AlertCircle, Loader2 } from 'lucide-react';
+import { Radio, Flame, Loader2 } from 'lucide-react';
 
 import { useCreateRequest } from '@/features/requests/hooks/use-requests';
 import { useNetworkResources } from '@/features/inventory/hooks/use-inventory';
@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -75,10 +74,10 @@ export function SOSPanicButton() {
         priority: 'CRITICAL',
         patient: values.patientCondition || values.patientBloodType
           ? {
-              name: 'Emergency Trauma Patient',
-              age: 0,
-              emergencyNotes: `Condition: ${values.patientCondition || 'Critical'}. Blood Type: ${values.patientBloodType || 'Unknown'}`,
-            }
+            name: 'Emergency Trauma Patient',
+            age: 0,
+            emergencyNotes: `Condition: ${values.patientCondition || 'Critical'}. Blood Type: ${values.patientBloodType || 'Unknown'}`,
+          }
           : undefined,
       },
       {
@@ -101,30 +100,29 @@ export function SOSPanicButton() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[480px] bg-gray-950 text-gray-100 border border-red-900/50 shadow-2xl">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-orange-500 to-red-500" />
+      <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto bg-card text-card-foreground border border-border shadow-2xl">
         <DialogHeader className="pt-4">
-          <DialogTitle className="text-xl font-bold flex items-center gap-2 text-red-500">
-            <Flame className="h-5.5 w-5.5 animate-bounce" />
+          <DialogTitle className="text-xl font-bold flex items-center gap-2 text-red-655/95">
+            <Flame className="h-5.5 w-5.5 animate-bounce text-red-500" />
             ACTIVATE NETWORK SOS BROADCAST
           </DialogTitle>
-          <DialogDescription className="text-gray-400 text-sm">
+          {/* <DialogDescription className="text-muted-foreground text-sm">
             Publish an emergency distress call matching nearby facilities within range.
-          </DialogDescription>
+          </DialogDescription> */}
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4 pt-2">
           {/* Resource Type */}
           <div className="space-y-1.5">
-            <Label htmlFor="resourceType" className="text-gray-300">Resource Category</Label>
+            <Label htmlFor="resourceType" className="text-foreground">Resource Category</Label>
             <Select
               value={selectedType}
               onValueChange={(val: ResourceType) => setValue('resourceType', val)}
             >
-              <SelectTrigger className="bg-gray-900 border-gray-800 text-gray-100">
+              <SelectTrigger className="bg-background border-border text-foreground">
                 <SelectValue placeholder="Select resource type" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-gray-800 text-gray-100">
+              <SelectContent className="bg-card border-border text-foreground">
                 <SelectItem value="BLOOD">Blood Products</SelectItem>
                 <SelectItem value="MEDICATION">Medication & Drugs</SelectItem>
                 <SelectItem value="PPE">Personal Protective Equipment</SelectItem>
@@ -135,26 +133,26 @@ export function SOSPanicButton() {
 
           {/* Item Name */}
           <div className="space-y-1.5 relative">
-            <Label htmlFor="itemName" className="text-gray-300">Item Name / Specification</Label>
+            <Label htmlFor="itemName" className="text-foreground">Item Name / Specification</Label>
             <div className="relative">
               <Input
                 id="itemName"
                 required
                 placeholder="Type or select a resource..."
-                className="bg-gray-900 border-gray-800 text-gray-100 focus:border-red-500"
+                className="bg-background border-border text-foreground focus:border-red-500"
                 {...register('itemName')}
                 onFocus={() => setIsSuggestionsOpen(true)}
                 onBlur={() => setIsSuggestionsOpen(false)}
                 autoComplete="off"
               />
               {isSuggestionsOpen && (
-                <div className="absolute left-0 right-0 z-50 mt-1 max-h-48 overflow-y-auto rounded-md border border-gray-800 bg-gray-900 p-1 text-gray-100 shadow-lg shadow-black/80 ring-1 ring-red-950/20">
+                <div className="absolute left-0 right-0 z-50 mt-1 max-h-48 overflow-y-auto rounded-md border border-border bg-card p-1 text-foreground shadow-lg ring-1 ring-red-100">
                   {networkResourcesLoading ? (
                     <div className="flex items-center justify-center p-4">
                       <Loader2 className="h-4 w-4 animate-spin text-red-500" />
                     </div>
                   ) : filteredResources.length === 0 ? (
-                    <div className="px-3 py-4 text-center text-sm text-gray-400">
+                    <div className="px-3 py-4 text-center text-sm text-muted-foreground">
                       No matching network items found
                     </div>
                   ) : (
@@ -162,7 +160,7 @@ export function SOSPanicButton() {
                       <button
                         key={`${item.itemName}-${index}`}
                         type="button"
-                        className="flex w-full items-center justify-between gap-4 rounded-sm px-2 py-1.5 text-sm text-left outline-none hover:bg-red-950/40 hover:text-white cursor-pointer select-none transition-colors border-b border-gray-850/30 last:border-0"
+                        className="flex w-full items-center justify-between gap-4 rounded-sm px-2 py-1.5 text-sm text-left outline-none hover:bg-red-50 hover:text-red-700 cursor-pointer select-none transition-colors border-b border-border last:border-0"
                         onMouseDown={(e) => {
                           e.preventDefault();
                           setValue('itemName', item.itemName);
@@ -171,7 +169,7 @@ export function SOSPanicButton() {
                       >
                         <span>{item.itemName}</span>
                         {item.isMovable && (
-                          <span className="text-[10px] text-emerald-400 bg-emerald-950/30 px-1.5 py-0.5 rounded border border-emerald-500/10">
+                          <span className="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/50">
                             Movable
                           </span>
                         )}
@@ -186,28 +184,28 @@ export function SOSPanicButton() {
           <div className="grid grid-cols-2 gap-4">
             {/* Quantity */}
             <div className="space-y-1.5">
-              <Label htmlFor="quantity" className="text-gray-300">Quantity Needed</Label>
+              <Label htmlFor="quantity" className="text-foreground">Quantity Needed</Label>
               <Input
                 id="quantity"
                 type="number"
                 min="1"
                 required
-                className="bg-gray-900 border-gray-800 text-gray-100 focus:border-red-500"
+                className="bg-background border-border text-foreground focus:border-red-500"
                 {...register('quantity')}
               />
             </div>
 
             {/* Unit */}
             <div className="space-y-1.5">
-              <Label htmlFor="unit" className="text-gray-300">Unit</Label>
+              <Label htmlFor="unit" className="text-foreground">Unit</Label>
               <Select
                 value={selectedUnit}
                 onValueChange={(val: InventoryUnit) => setValue('unit', val)}
               >
-                <SelectTrigger className="bg-gray-900 border-gray-800 text-gray-100">
+                <SelectTrigger className="bg-background border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-800 text-gray-100">
+                <SelectContent className="bg-card border-border text-foreground">
                   <SelectItem value="BOXES">Boxes</SelectItem>
                   <SelectItem value="PACKS">Packs</SelectItem>
                   <SelectItem value="UNITS">Units</SelectItem>
@@ -219,9 +217,9 @@ export function SOSPanicButton() {
 
           {/* Broadcast Radius */}
           <div className="space-y-1.5">
-            <div className="flex justify-between items-center text-sm text-gray-300">
+            <div className="flex justify-between items-center text-sm text-foreground">
               <Label htmlFor="maxRadiusKm">Broadcast Radius Limit</Label>
-              <span className="font-semibold text-red-400">{watch('maxRadiusKm')} km</span>
+              <span className="font-semibold text-red-600">{watch('maxRadiusKm')} km</span>
             </div>
             <Input
               id="maxRadiusKm"
@@ -229,45 +227,45 @@ export function SOSPanicButton() {
               min="5"
               max="150"
               step="5"
-              className="w-full accent-red-600 bg-gray-900"
+              className="w-full accent-red-600 bg-muted"
               {...register('maxRadiusKm')}
             />
           </div>
 
           {/* Patient Context */}
-          <div className="p-3 bg-red-950/15 border border-red-900/30 rounded-lg space-y-2">
-            <div className="flex items-center gap-1.5 text-xs font-semibold uppercase text-red-400">
+          {/* <div className="p-3 bg-red-50/50 border border-red-100 rounded-lg space-y-2">
+            <div className="flex items-center gap-1.5 text-xs font-semibold uppercase text-red-600">
               <AlertCircle className="h-4 w-4" />
               Optional Patient Context
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="patientCondition" className="text-[10px] text-gray-400 uppercase">Condition</Label>
+                <Label htmlFor="patientCondition" className="text-[10px] text-muted-foreground uppercase">Condition</Label>
                 <Input
                   id="patientCondition"
                   placeholder="e.g. Active Hemorrhage"
-                  className="bg-gray-950 border-gray-850 h-8 text-xs text-gray-200"
+                  className="bg-background border-border h-8 text-xs text-foreground"
                   {...register('patientCondition')}
                 />
               </div>
               <div>
-                <Label htmlFor="patientBloodType" className="text-[10px] text-gray-400 uppercase">Blood Type</Label>
+                <Label htmlFor="patientBloodType" className="text-[10px] text-muted-foreground uppercase">Blood Type</Label>
                 <Input
                   id="patientBloodType"
                   placeholder="e.g. O-"
-                  className="bg-gray-950 border-gray-850 h-8 text-xs text-gray-200"
+                  className="bg-background border-border h-8 text-xs text-foreground"
                   {...register('patientBloodType')}
                 />
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Description */}
           <div className="space-y-1.5">
-            <Label htmlFor="description" className="text-gray-300">Brief Description</Label>
+            <Label htmlFor="description" className="text-foreground">Brief Description</Label>
             <Input
               id="description"
-              className="bg-gray-900 border-gray-800 text-gray-100 focus:border-red-500"
+              className="bg-background border-border text-foreground focus:border-red-500"
               {...register('description')}
             />
           </div>
@@ -275,7 +273,7 @@ export function SOSPanicButton() {
           <Button
             type="submit"
             disabled={createRequestMutation.isPending}
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 shadow-[0_0_15px_rgba(220,38,38,0.4)]"
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 shadow-[0_0_15px_rgba(220,38,38,0.3)] transition-colors"
           >
             {createRequestMutation.isPending ? 'Broadcasting SOS Signal...' : 'BROADCAST SOS SIGNAL NOW'}
           </Button>

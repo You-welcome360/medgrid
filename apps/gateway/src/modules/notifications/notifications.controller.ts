@@ -15,7 +15,7 @@ export const listNotificationsController = async (
     const type = req.query['type'] as string;
     const read = req.query['read'] as string;
 
-    const where: any = { userId };
+    const where: any = { userId, channel: NotificationChannel.WEBSOCKET };
     if (type && Object.values(NotificationType).includes(type as NotificationType)) {
       where.type = type as NotificationType;
     }
@@ -106,7 +106,7 @@ export const markAllReadController = async (
     const userId = user.id;
 
     await prisma.notification.updateMany({
-      where: { userId, readAt: null },
+      where: { userId, readAt: null, channel: NotificationChannel.WEBSOCKET },
       data: { readAt: new Date() },
     });
 

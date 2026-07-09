@@ -66,6 +66,40 @@ export class PaystackService {
     }
   }
 
+  static async verifyTransaction(reference: string): Promise<{ status: string }> {
+    const secretKey = this.getSecretKey();
+
+    if (secretKey === 'dummy_paystack_secret_key') {
+      return { status: 'success' };
+    }
+
+    try {
+      const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${secretKey}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Paystack verification failed: ${errorText}`);
+      }
+
+      const resBody = (await response.json()) as any;
+      if (!resBody.status) {
+        throw new Error(`Paystack verification API returned false status: ${resBody.message}`);
+      }
+
+      return {
+        status: resBody.data.status,
+      };
+    } catch (err: any) {
+      console.error('Paystack Verification Error:', err.message);
+      throw err;
+    }
+  }
+
   static verifySignature(rawBody: string, signature: string | undefined): boolean {
     if (!signature) return false;
     const secretKey = this.getSecretKey();

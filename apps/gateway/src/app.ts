@@ -18,14 +18,45 @@ import { systemRouter } from './modules/system';
 export const createApp = () => {
   const app = express();
 
+  const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : ['http://localhost:5173'];
+
   app.use(
     cors({
-      origin: 'http://localhost:5173',
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+
+        const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+        const isNgrok =
+          origin.endsWith('.ngrok-free.dev') ||
+          origin.endsWith('.ngrok-free.app') ||
+          origin.endsWith('.loca.lt');
+        const isLocalIp =
+          origin.startsWith('http://localhost') ||
+          origin.startsWith('http://127.0.0.1') ||
+          /^https?:\/\/(192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3})(:\d+)?$/.test(origin);
+
+        if (
+          allowedOrigins.includes(origin) ||
+          (isDevelopment && (isNgrok || isLocalIp))
+        ) {
+          callback(null, true);
+        } else {
+          callback(new Error(`Origin ${origin} not allowed by CORS`));
+        }
+      },
       credentials: true,
     })
   );
 
-  app.use(express.json());
+  app.use(
+    express.json({
+      verify: (req: any, _res, buf) => {
+        req.rawBody = buf;
+      },
+    })
+  );
 
   app.use(requestLoggerMiddleware);
 

@@ -140,7 +140,7 @@ export default function NetworkDirectoryPage() {
         attributionControl: false,
       });
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
       }).addTo(map);
 
@@ -166,10 +166,10 @@ export default function NetworkDirectoryPage() {
           <div class="relative flex items-center justify-center w-8 h-8">
             ${
               isMyFacility
-                ? `<div class="absolute w-8 h-8 rounded-full opacity-20 animate-ping bg-indigo-500"></div>`
+                ? `<div class="absolute w-8 h-8 rounded-full opacity-20 animate-ping bg-primary"></div>`
                 : `<div class="absolute w-6 h-6 rounded-full opacity-25 animate-pulse" style="background-color: ${color};"></div>`
             }
-            <div class="relative w-6 h-6 rounded-full border-2 border-slate-900 flex items-center justify-center shadow-lg transition-transform duration-200 hover:scale-125" 
+            <div class="relative w-6 h-6 rounded-full border-2 border-white flex items-center justify-center shadow-lg transition-transform duration-200 hover:scale-125" 
                  style="background-color: ${color};">
               <span class="text-[9px] font-bold text-white">${item.facility.type.charAt(0)}</span>
             </div>
@@ -190,9 +190,9 @@ export default function NetworkDirectoryPage() {
           });
 
         marker.bindTooltip(
-          `<div class="px-2 py-1 bg-slate-900 border border-slate-800 rounded shadow text-xs text-slate-100">
+          `<div class="px-2 py-1 bg-white border border-slate-200 rounded shadow text-xs text-slate-900">
             <p class="font-semibold">${item.facility.name}</p>
-            <p class="text-[10px] text-slate-400">Available: ${item.quantity} ${item.unit.toLowerCase()}</p>
+            <p class="text-[10px] text-slate-500">Available: ${item.quantity} ${item.unit.toLowerCase()}</p>
           </div>`,
           { direction: 'top', offset: [0, -10] }
         );
@@ -227,13 +227,13 @@ export default function NetworkDirectoryPage() {
 
         {/* View Toggle Controls */}
         {selected && (
-          <div className="flex bg-slate-900 border border-slate-800 rounded-lg p-1 shrink-0 self-start md:self-auto">
+          <div className="flex bg-muted border border-border rounded-lg p-1 shrink-0 self-start md:self-auto">
             <button
               onClick={() => setViewMode('list')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
                 viewMode === 'list'
-                  ? 'bg-indigo-600 text-white shadow'
-                  : 'text-gray-400 hover:text-white'
+                  ? 'bg-primary text-primary-foreground shadow'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <List className="h-3.5 w-3.5" />
@@ -243,8 +243,8 @@ export default function NetworkDirectoryPage() {
               onClick={() => setViewMode('map')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
                 viewMode === 'map'
-                  ? 'bg-indigo-600 text-white shadow'
-                  : 'text-gray-400 hover:text-white'
+                  ? 'bg-primary text-primary-foreground shadow'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <Map className="h-3.5 w-3.5" />
@@ -256,16 +256,16 @@ export default function NetworkDirectoryPage() {
 
       <div className="grid gap-6 md:grid-cols-3">
         {/* Left Side: Resources Catalog */}
-        <Card className="md:col-span-1 h-[calc(100vh-220px)] flex flex-col border-slate-800 bg-slate-900/10">
+        <Card className="md:col-span-1 h-[calc(100vh-220px)] flex flex-col border-border bg-card shadow-sm">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Resource Catalog</CardTitle>
+            <CardTitle className="text-base text-foreground">Resource Catalog</CardTitle>
             <div className="relative mt-2">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search resources..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 bg-slate-950 border-slate-800 text-slate-100"
+                className="pl-8 bg-background border-border text-foreground focus-visible:ring-primary"
               />
             </div>
           </CardHeader>
@@ -296,12 +296,12 @@ export default function NetworkDirectoryPage() {
                       }
                       className={`w-full text-left rounded-lg border p-3 transition-colors ${
                         isCurrent
-                          ? 'border-indigo-600 bg-indigo-950/20'
-                          : 'border-slate-800 hover:bg-slate-900/40'
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border hover:bg-muted/50'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-semibold text-sm line-clamp-1 text-slate-200">
+                        <span className="font-semibold text-sm line-clamp-1 text-foreground">
                           {resource.itemName}
                         </span>
                         <Badge
@@ -313,7 +313,7 @@ export default function NetworkDirectoryPage() {
                           {TYPE_LABELS[resource.resourceType] ?? resource.resourceType}
                         </Badge>
                       </div>
-                      <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
+                      <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                         <span>
                           {resource.isMovable ? 'Movable Product' : 'Fixed Resource'}
                         </span>
@@ -327,11 +327,11 @@ export default function NetworkDirectoryPage() {
         </Card>
 
         {/* Right Side: Supplies directory */}
-        <Card className="md:col-span-2 h-[calc(100vh-220px)] flex flex-col border-slate-800 bg-slate-900/10">
-          <CardHeader className="pb-3 border-b border-slate-800">
+        <Card className="md:col-span-2 h-[calc(100vh-220px)] flex flex-col border-border bg-card shadow-sm">
+          <CardHeader className="pb-3 border-b border-border">
             {selected ? (
               <div>
-                <CardTitle className="text-base flex items-center gap-2 text-slate-200">
+                <CardTitle className="text-base flex items-center gap-2 text-foreground">
                   <span>Suppliers for: {selected.itemName}</span>
                   <Badge
                     variant="outline"
@@ -348,7 +348,7 @@ export default function NetworkDirectoryPage() {
               </div>
             ) : (
               <div>
-                <CardTitle className="text-base text-slate-200">Supplier Details</CardTitle>
+                <CardTitle className="text-base text-foreground">Supplier Details</CardTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Select an item from the left catalog to display supplying facilities.
                 </p>
@@ -359,8 +359,8 @@ export default function NetworkDirectoryPage() {
             {!selected ? (
               <div className="flex h-full flex-col items-center justify-center p-8 text-center">
                 <Package className="h-10 w-10 text-muted-foreground mb-3 opacity-60" />
-                <h3 className="font-semibold text-sm text-slate-200">No Resource Selected</h3>
-                <p className="text-xs text-slate-400 mt-1 max-w-xs">
+                <h3 className="font-semibold text-sm text-foreground">No Resource Selected</h3>
+                <p className="text-xs text-muted-foreground mt-1 max-w-xs">
                   Choose a resource type or name from the catalog list to locate hosting facilities.
                 </p>
               </div>
@@ -372,54 +372,54 @@ export default function NetworkDirectoryPage() {
               <div className="flex h-full flex-col items-center justify-center p-8 text-center">
                 <AlertCircle className="h-8 w-8 text-orange-500 mb-2" />
                 <h3 className="font-semibold text-sm text-orange-700">Out of Stock</h3>
-                <p className="text-xs text-slate-400 mt-1 max-w-xs">
+                <p className="text-xs text-muted-foreground mt-1 max-w-xs">
                   There are currently no active, available quantities of this item in the network.
                 </p>
               </div>
             ) : viewMode === 'list' ? (
               <Table>
-                <TableHeader className="bg-slate-900/40">
-                  <TableRow className="border-slate-800 hover:bg-slate-900/20">
-                    <TableHead className="text-slate-300">Facility</TableHead>
-                    <TableHead className="text-slate-300">Location</TableHead>
-                    <TableHead className="text-slate-300">Contact</TableHead>
-                    <TableHead className="text-right text-slate-300">Available</TableHead>
-                    <TableHead className="text-right text-slate-300">Price</TableHead>
-                    <TableHead className="w-28 text-right text-slate-300" />
+                <TableHeader className="bg-muted/50">
+                  <TableRow className="border-border hover:bg-muted/20">
+                    <TableHead className="text-muted-foreground">Facility</TableHead>
+                    <TableHead className="text-muted-foreground">Location</TableHead>
+                    <TableHead className="text-muted-foreground">Contact</TableHead>
+                    <TableHead className="text-right text-muted-foreground">Available</TableHead>
+                    <TableHead className="text-right text-muted-foreground">Price</TableHead>
+                    <TableHead className="w-28 text-right text-muted-foreground" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {facilities.map((item, i) => (
-                    <TableRow key={i} className="border-slate-800 hover:bg-slate-900/40">
+                    <TableRow key={i} className="border-border hover:bg-muted/30">
                       <TableCell>
-                        <div className="font-semibold text-sm text-slate-200">{item.facility.name}</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider font-semibold">
+                        <div className="font-semibold text-sm text-foreground">{item.facility.name}</div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5 uppercase tracking-wider font-semibold">
                           {item.facility.type.replace('_', ' ')}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1 text-xs text-slate-300">
-                          <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-500" />
+                        <div className="flex items-center gap-1 text-xs text-foreground">
+                          <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                           <span>
                             {item.facility.district}, {item.facility.region}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="space-y-1 text-xs text-slate-400">
+                        <div className="space-y-1 text-xs text-muted-foreground">
                           <div className="flex items-center gap-1.5">
-                            <Phone className="h-3 w-3 shrink-0 text-slate-500" />
+                            <Phone className="h-3 w-3 shrink-0 text-muted-foreground" />
                             <span>{item.facility.phone}</span>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right font-medium text-slate-200">
+                      <TableCell className="text-right font-medium text-foreground">
                         {item.quantity.toLocaleString()}{' '}
-                        <span className="text-[10px] font-normal text-slate-400">
+                        <span className="text-[10px] font-normal text-muted-foreground">
                           {item.unit.toLowerCase()}
                         </span>
                       </TableCell>
-                      <TableCell className="text-right font-semibold text-sm text-slate-100">
+                      <TableCell className="text-right font-semibold text-sm text-foreground">
                         {item.price !== undefined && item.price !== null
                           ? `₵${item.price.toFixed(2)}`
                           : '—'}
@@ -427,7 +427,7 @@ export default function NetworkDirectoryPage() {
                       <TableCell className="text-right">
                         <Button
                           size="sm"
-                          className="h-8 text-xs gap-1 bg-indigo-600 hover:bg-indigo-700 text-white"
+                          className="h-8 text-xs gap-1 bg-primary hover:bg-primary/90 text-primary-foreground"
                           onClick={() =>
                             navigate('/requests/new', {
                               state: {
@@ -454,19 +454,19 @@ export default function NetworkDirectoryPage() {
 
                 {/* Selected Map Item Overlay Card */}
                 {selectedMapItem && (
-                  <div className="absolute top-4 left-4 right-4 md:left-auto md:right-4 z-10 max-w-sm w-full bg-slate-950/95 backdrop-blur border border-slate-800 rounded-xl p-4 shadow-2xl transition-all animate-in slide-in-from-right-10 pointer-events-auto">
+                  <div className="absolute top-4 left-4 right-4 md:left-auto md:right-4 z-10 max-w-sm w-full bg-card/95 backdrop-blur border border-border rounded-xl p-4 shadow-2xl transition-all animate-in slide-in-from-right-10 pointer-events-auto">
                     <button
                       onClick={() => setSelectedMapItem(null)}
-                      className="absolute top-3 right-3 text-slate-500 hover:text-slate-300"
+                      className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
                     >
                       <X className="h-4.5 w-4.5" />
                     </button>
 
                     <div>
-                      <h4 className="font-bold text-slate-100 text-sm leading-snug pr-6">
+                      <h4 className="font-bold text-foreground text-sm leading-snug pr-6">
                         {selectedMapItem.facility.name}
                       </h4>
-                      <p className="text-[10px] text-slate-400 capitalize mt-0.5 flex items-center gap-1">
+                      <p className="text-[10px] text-muted-foreground capitalize mt-0.5 flex items-center gap-1">
                         <span
                           className="h-1.5 w-1.5 rounded-full"
                           style={{
@@ -480,11 +480,11 @@ export default function NetworkDirectoryPage() {
 
                     {/* Haversine distance indicator */}
                     {selectedDistance !== null && (
-                      <div className="bg-slate-900/60 border border-slate-800/60 p-2.5 rounded-lg flex items-center justify-between text-xs mt-3">
-                        <span className="text-slate-400 flex items-center gap-1">
-                          <Navigation className="h-3.5 w-3.5 text-indigo-400" /> Distance from you
+                      <div className="bg-muted border border-border p-2.5 rounded-lg flex items-center justify-between text-xs mt-3">
+                        <span className="text-muted-foreground flex items-center gap-1">
+                          <Navigation className="h-3.5 w-3.5 text-primary" /> Distance from you
                         </span>
-                        <span className="font-semibold text-slate-200 font-mono">
+                        <span className="font-semibold text-foreground font-mono">
                           {selectedDistance.toFixed(1)} km
                         </span>
                       </div>
@@ -492,33 +492,33 @@ export default function NetworkDirectoryPage() {
 
                     {/* Contact metadata */}
                     <div className="space-y-1.5 text-xs mt-3">
-                      <div className="flex items-center gap-2 text-slate-400">
-                        <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                         <span className="truncate">
                           {selectedMapItem.facility.district}, {selectedMapItem.facility.region}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-slate-400">
-                        <Phone className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                         <span>{selectedMapItem.facility.phone}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-slate-400">
-                        <Mail className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                         <span className="truncate">{selectedMapItem.facility.email}</span>
                       </div>
                     </div>
 
                     {/* Availability details */}
-                    <div className="border-t border-slate-800/60 pt-3 mt-3 flex justify-between items-center text-xs">
+                    <div className="border-t border-border/60 pt-3 mt-3 flex justify-between items-center text-xs">
                       <div>
-                        <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Available Stock</p>
-                        <p className="font-bold text-slate-200 text-sm mt-0.5">
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Available Stock</p>
+                        <p className="font-bold text-foreground text-sm mt-0.5">
                           {selectedMapItem.quantity.toLocaleString()} {selectedMapItem.unit.toLowerCase()}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Unit Cost</p>
-                        <p className="font-bold text-slate-200 text-sm mt-0.5">
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Unit Cost</p>
+                        <p className="font-bold text-foreground text-sm mt-0.5">
                           {selectedMapItem.price !== null ? `₵${selectedMapItem.price.toFixed(2)}` : '—'}
                         </p>
                       </div>
@@ -526,7 +526,7 @@ export default function NetworkDirectoryPage() {
 
                     {/* Trigger Request Redirect */}
                     <Button
-                      className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white gap-2 font-semibold text-xs"
+                      className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground gap-2 font-semibold text-xs"
                       onClick={() =>
                         navigate('/requests/new', {
                           state: {

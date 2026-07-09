@@ -14,9 +14,28 @@ import {
   changePasswordWithAuthService,
 } from '../../clients/auth';
 
-const forwardSetCookie = (res: Response, setCookie: string | null) => {
+const forwardSetCookie = (req: Request, res: Response, setCookie: string | null) => {
   if (setCookie) {
-    res.setHeader('Set-Cookie', setCookie);
+    const origin = req.headers.origin || '';
+    const host = req.headers.host || '';
+    const isNgrokOrHttps =
+      origin.startsWith('https://') ||
+      origin.includes('ngrok-free') ||
+      host.includes('ngrok-free') ||
+      req.secure;
+
+    if (isNgrokOrHttps) {
+      let modified = setCookie.replace(/SameSite=[a-zA-Z]+/i, 'SameSite=None');
+      if (!modified.includes('SameSite=')) {
+        modified += '; SameSite=None';
+      }
+      if (!/Secure/i.test(modified)) {
+        modified += '; Secure';
+      }
+      res.setHeader('Set-Cookie', modified);
+    } else {
+      res.setHeader('Set-Cookie', setCookie);
+    }
   }
 };
 
@@ -34,7 +53,7 @@ export const loginController = async (
 
     const response = await loginWithAuthService(result.data);
 
-    forwardSetCookie(res, response.setCookie);
+    forwardSetCookie(req, res, response.setCookie);
 
     return res.status(response.statusCode).json(response.body);
   } catch (error) {
@@ -50,7 +69,7 @@ export const refreshController = async (
   try {
     const response = await refreshWithAuthService(req.headers.cookie);
 
-    forwardSetCookie(res, response.setCookie);
+    forwardSetCookie(req, res, response.setCookie);
 
     return res.status(response.statusCode).json(response.body);
   } catch (error) {
@@ -66,7 +85,7 @@ export const logoutController = async (
   try {
     const response = await logoutWithAuthService(req.headers.cookie);
 
-    forwardSetCookie(res, response.setCookie);
+    forwardSetCookie(req, res, response.setCookie);
 
     return res.status(response.statusCode).json(response.body);
   } catch (error) {
@@ -85,7 +104,7 @@ export const meController = async (
       req.headers.cookie
     );
 
-    forwardSetCookie(res, response.setCookie);
+    forwardSetCookie(req, res, response.setCookie);
 
     return res.status(response.statusCode).json(response.body);
   } catch (error) {

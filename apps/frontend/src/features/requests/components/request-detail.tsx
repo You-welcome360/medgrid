@@ -131,7 +131,7 @@ export function RequestDetail({ request }: RequestDetailProps) {
   const canDispatch =
     isSupplier &&
     request.status === 'ACCEPTED' &&
-    (isFacilityAdmin || isInventoryManager);
+    (isFacilityAdmin || isInventoryManager || isCoordinationManager);
   const canConfirm =
     isRequester &&
     request.status === 'IN_TRANSIT' &&
@@ -141,7 +141,7 @@ export function RequestDetail({ request }: RequestDetailProps) {
   const canFail =
     isSupplier &&
     request.status === 'IN_TRANSIT' &&
-    (isFacilityAdmin || isInventoryManager);
+    (isFacilityAdmin || isInventoryManager || isCoordinationManager);
 
   const handleAccept = () => {
     accept.mutate(request.id, {
