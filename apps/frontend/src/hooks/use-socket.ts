@@ -1,10 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { getAccessToken, BASE_URL } from '@/api/client';
 
-export function useSocket(events: Record<string, (data: any) => void>) {
-  const socketRef = useRef<Socket | null>(null);
-  
+export function useSocket(
+  events: Record<string, (...args: unknown[]) => void>
+) {
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const eventsRef = useRef(events);
+  useEffect(() => {
+    eventsRef.current = events;
+  }, [events]);
+
   // Use a stringified list of keys to prevent infinite re-subscription loops
   const eventKeys = Object.keys(events).join(',');
 
@@ -19,24 +25,26 @@ export function useSocket(events: Record<string, (data: any) => void>) {
       // fallback
     }
 
-    const socket = io(socketUrl, {
+    const newSocket = io(socketUrl, {
       auth: { token },
       transports: ['websocket', 'polling'],
     });
 
-    socketRef.current = socket;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSocket(newSocket);
 
-    Object.entries(events).forEach(([event, handler]) => {
-      socket.on(event, handler);
+    Object.entries(eventsRef.current).forEach(([event, handler]) => {
+      newSocket.on(event, handler);
     });
 
     return () => {
-      Object.entries(events).forEach(([event]) => {
-        socket.off(event);
+      Object.entries(eventsRef.current).forEach(([event]) => {
+        newSocket.off(event);
       });
-      socket.disconnect();
+      newSocket.disconnect();
+      setSocket(null);
     };
-  }, [eventKeys]); // re-run only when event names change
+  }, [eventKeys]);
 
-  return socketRef.current;
+  return socket;
 }

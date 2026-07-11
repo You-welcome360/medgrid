@@ -15,9 +15,19 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
-import { useBroadcasts, useAcceptBroadcast, useDeclineBroadcast } from '@/features/requests/hooks/use-requests';
+import {
+  useBroadcasts,
+  useAcceptBroadcast,
+  useDeclineBroadcast,
+} from '@/features/requests/hooks/use-requests';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/shared/page-header';
 import { Separator } from '@/components/ui/separator';
@@ -30,7 +40,8 @@ export default function SOSDashboard() {
   const declineMutation = useDeclineBroadcast();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const selectedBroadcast = broadcasts?.find((b) => b.id === selectedId) || null;
+  const selectedBroadcast =
+    broadcasts?.find((b) => b.id === selectedId) || null;
 
   return (
     <div className="space-y-6 p-6 min-h-[calc(100vh-4rem)] bg-card text-card-foreground rounded-xl border border-border">
@@ -42,7 +53,10 @@ export default function SOSDashboard() {
         <div className="flex items-center gap-3">
           {/* Show All toggle */}
           <button
-            onClick={() => { setIgnoreRadius((v) => !v); setSelectedId(null); }}
+            onClick={() => {
+              setIgnoreRadius((v) => !v);
+              setSelectedId(null);
+            }}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-all duration-300 ${
               ignoreRadius
                 ? 'bg-blue-50 border-blue-200 text-blue-600 shadow-[0_0_12px_rgba(59,130,246,0.1)]'
@@ -50,7 +64,9 @@ export default function SOSDashboard() {
             }`}
           >
             <Globe className="h-4 w-4" />
-            {ignoreRadius ? 'All Network (Radius Off)' : 'Nearby Only (Radius On)'}
+            {ignoreRadius
+              ? 'All Network (Radius Off)'
+              : 'Nearby Only (Radius On)'}
           </button>
 
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm font-medium animate-pulse">
@@ -77,7 +93,10 @@ export default function SOSDashboard() {
           {isLoading ? (
             <div className="space-y-3">
               {[1, 2].map((i) => (
-                <div key={i} className="h-28 w-full bg-muted/50 rounded-xl border border-border animate-pulse" />
+                <div
+                  key={i}
+                  className="h-28 w-full bg-muted/50 rounded-xl border border-border animate-pulse"
+                />
               ))}
             </div>
           ) : !broadcasts || broadcasts.length === 0 ? (
@@ -88,7 +107,9 @@ export default function SOSDashboard() {
                   <Radio className="h-6 w-6" />
                 </div>
               </div>
-              <p className="text-muted-foreground font-medium">No SOS Broadcasts detected</p>
+              <p className="text-muted-foreground font-medium">
+                No SOS Broadcasts detected
+              </p>
               <p className="text-sm text-slate-400 mt-1 max-w-[200px]">
                 {ignoreRadius
                   ? 'No active broadcasts across the entire network.'
@@ -125,7 +146,10 @@ export default function SOSDashboard() {
 
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <Badge variant="destructive" className="bg-red-500 hover:bg-red-600 text-xs px-2 py-0.5">
+                        <Badge
+                          variant="destructive"
+                          className="bg-red-500 hover:bg-red-600 text-xs px-2 py-0.5"
+                        >
                           {b.priority}
                         </Badge>
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -141,7 +165,9 @@ export default function SOSDashboard() {
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                          {b.distance !== undefined ? `${b.distance.toFixed(1)} km` : 'Local'}
+                          {b.distance !== undefined
+                            ? `${b.distance.toFixed(1)} km`
+                            : 'Local'}
                         </span>
                         <span className="text-border">|</span>
                         <span className="truncate max-w-[120px]">
@@ -174,10 +200,12 @@ export default function SOSDashboard() {
                       </Badge>
                     </div>
                     <CardTitle className="text-2xl font-bold mt-2">
-                      {selectedBroadcast.quantity} {selectedBroadcast.unit} {selectedBroadcast.itemName}
+                      {selectedBroadcast.quantity} {selectedBroadcast.unit}{' '}
+                      {selectedBroadcast.itemName}
                     </CardTitle>
                     <CardDescription className="text-muted-foreground text-sm">
-                      Distress beacon active since {new Date(selectedBroadcast.requestedAt).toLocaleString()}
+                      Distress beacon active since{' '}
+                      {new Date(selectedBroadcast.requestedAt).toLocaleString()}
                     </CardDescription>
                   </div>
                 </div>
@@ -203,16 +231,26 @@ export default function SOSDashboard() {
                         <div className="bg-red-50 p-4 rounded-xl border border-red-250/15 space-y-2 text-sm text-red-800">
                           <div className="flex items-center gap-2">
                             <Activity className="h-4 w-4 text-red-600" />
-                            <span className="font-semibold text-red-950">Trauma/Emergency Patient Details</span>
+                            <span className="font-semibold text-red-950">
+                              Trauma/Emergency Patient Details
+                            </span>
                           </div>
                           <div className="grid grid-cols-2 gap-2 text-xs text-red-700">
                             <div>
                               <span className="text-red-600">Condition:</span>{' '}
-                              {(selectedBroadcast.patient as any).condition || 'Severe'}
+                              {(
+                                selectedBroadcast.patient as {
+                                  condition?: string;
+                                }
+                              )?.condition || 'Severe'}
                             </div>
                             <div>
                               <span className="text-red-600">Blood Type:</span>{' '}
-                              {(selectedBroadcast.patient as any).bloodType || 'N/A'}
+                              {(
+                                selectedBroadcast.patient as {
+                                  bloodType?: string;
+                                }
+                              )?.bloodType || 'N/A'}
                             </div>
                           </div>
                         </div>
@@ -229,8 +267,14 @@ export default function SOSDashboard() {
                       <div className="font-bold text-foreground text-base flex items-center gap-2 flex-wrap">
                         {selectedBroadcast.requestingFacilityName}
                         {selectedBroadcast.requestingFacilityType && (
-                          <Badge variant="outline" className="text-[10px] uppercase font-semibold border-muted-foreground/30 text-muted-foreground px-1.5 py-0">
-                            {selectedBroadcast.requestingFacilityType.replace(/_/g, ' ')}
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] uppercase font-semibold border-muted-foreground/30 text-muted-foreground px-1.5 py-0"
+                          >
+                            {selectedBroadcast.requestingFacilityType.replace(
+                              /_/g,
+                              ' '
+                            )}
                           </Badge>
                         )}
                       </div>
@@ -241,18 +285,23 @@ export default function SOSDashboard() {
                           {selectedBroadcast.requestingFacilityDistrict} (
                           {selectedBroadcast.distance !== undefined
                             ? `${selectedBroadcast.distance.toFixed(2)} km away`
-                            : 'distance unknown'})
+                            : 'distance unknown'}
+                          )
                         </span>
                       </div>
                       <Separator className="bg-border/60" />
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 text-foreground">
                           <Phone className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span>{selectedBroadcast.requestingFacilityPhone}</span>
+                          <span>
+                            {selectedBroadcast.requestingFacilityPhone}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2 text-foreground">
                           <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span>{selectedBroadcast.requestingFacilityEmail}</span>
+                          <span>
+                            {selectedBroadcast.requestingFacilityEmail}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -270,7 +319,9 @@ export default function SOSDashboard() {
                         onSuccess: () => setSelectedId(null),
                       });
                     }}
-                    disabled={declineMutation.isPending || acceptMutation.isPending}
+                    disabled={
+                      declineMutation.isPending || acceptMutation.isPending
+                    }
                     className="text-muted-foreground hover:text-foreground hover:bg-muted"
                   >
                     <XCircle className="h-4 w-4 mr-2" />
@@ -285,11 +336,15 @@ export default function SOSDashboard() {
                         },
                       });
                     }}
-                    disabled={acceptMutation.isPending || declineMutation.isPending}
+                    disabled={
+                      acceptMutation.isPending || declineMutation.isPending
+                    }
                     className="bg-red-600 hover:bg-red-700 text-white font-medium shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] transition-all duration-300"
                   >
                     <CheckCircle2 className="h-4 w-4 mr-2" />
-                    {acceptMutation.isPending ? 'Claiming SOS...' : 'Accept SOS & Dispatch'}
+                    {acceptMutation.isPending
+                      ? 'Claiming SOS...'
+                      : 'Accept SOS & Dispatch'}
                   </Button>
                 </div>
               </CardContent>
@@ -297,9 +352,12 @@ export default function SOSDashboard() {
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-center p-8 border border-border rounded-xl bg-muted/5 min-h-[400px]">
               <AlertTriangle className="h-10 w-10 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground font-medium">No Signal Selected</p>
+              <p className="text-muted-foreground font-medium">
+                No Signal Selected
+              </p>
               <p className="text-sm text-slate-400 mt-1 max-w-[280px]">
-                Click an active SOS distress signal from the list to view facility information, coordinates, and accept dispatch.
+                Click an active SOS distress signal from the list to view
+                facility information, coordinates, and accept dispatch.
               </p>
             </div>
           )}

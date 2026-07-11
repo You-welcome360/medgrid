@@ -8,7 +8,7 @@ export interface NotificationItem {
   channel: string;
   title: string;
   body: string;
-  data: any;
+  data: Record<string, unknown> | null;
   readAt: string | null;
   deliveredAt: string | null;
   createdAt: string;
@@ -30,7 +30,12 @@ export interface NotificationPreferences {
 }
 
 export const notificationsApi = {
-  list: (params: { page: number; limit: number; read?: boolean; type?: string }) => {
+  list: (params: {
+    page: number;
+    limit: number;
+    read?: boolean;
+    type?: string;
+  }) => {
     const searchParams = new URLSearchParams();
     searchParams.append('page', String(params.page));
     searchParams.append('limit', String(params.limit));
@@ -40,14 +45,18 @@ export const notificationsApi = {
     if (params.type) {
       searchParams.append('type', params.type);
     }
-    return api.get<GetNotificationsResponse>(`/notifications?${searchParams.toString()}`);
+    return api.get<GetNotificationsResponse>(
+      `/notifications?${searchParams.toString()}`
+    );
   },
 
-  markAsRead: (id: string) => api.put<NotificationItem>(`/notifications/${id}/read`, {}),
+  markAsRead: (id: string) =>
+    api.put<NotificationItem>(`/notifications/${id}/read`, {}),
 
   markAllAsRead: () => api.put<null>('/notifications/mark-all-read', {}),
 
-  getPreferences: () => api.get<NotificationPreferences>('/notifications/preferences'),
+  getPreferences: () =>
+    api.get<NotificationPreferences>('/notifications/preferences'),
 
   updatePreferences: (prefs: {
     push?: { enabled: boolean; emergencyOnly: boolean };

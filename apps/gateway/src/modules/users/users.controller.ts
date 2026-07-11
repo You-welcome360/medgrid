@@ -27,7 +27,11 @@ const getUserHeaders = (req: Request, res: Response) => {
 
   return {
     authorizationHeader: req.headers.authorization,
-    facilityId: user.facilityId ?? null,
+    facilityId:
+      (req.headers['x-facility-id'] as string) ||
+      res.locals.targetFacilityId ||
+      user.facilityId ||
+      null,
     userId: user.id,
     userRole: user.role,
   };
@@ -54,7 +58,7 @@ export const inviteUserController = async (
       getUserHeaders(req, res)
     );
 
-    return res.status(201).json(response);
+    return res.status(response.statusCode).json(response.body);
   } catch (error) {
     return next(error);
   }
@@ -84,7 +88,7 @@ export const completeInvitationController = async (
       invitationToken
     );
 
-    return res.status(200).json(response);
+    return res.status(response.statusCode).json(response.body);
   } catch (error) {
     return next(error);
   }
@@ -98,7 +102,7 @@ export const listUsersController = async (
   try {
     const response = await listUsersFromAuthService(getUserHeaders(req, res));
 
-    return res.status(200).json(response);
+    return res.status(response.statusCode).json(response.body);
   } catch (error) {
     return next(error);
   }
@@ -117,7 +121,7 @@ export const getUserByIdController = async (
       getUserHeaders(req, res)
     );
 
-    return res.status(200).json(response);
+    return res.status(response.statusCode).json(response.body);
   } catch (error) {
     return next(error);
   }
@@ -143,7 +147,7 @@ export const updateUserStatusController = async (
       getUserHeaders(req, res)
     );
 
-    return res.status(200).json(response);
+    return res.status(response.statusCode).json(response.body);
   } catch (error) {
     return next(error);
   }
@@ -169,7 +173,7 @@ export const elevateController = async (
       user.id
     );
 
-    return res.status(200).json(response);
+    return res.status(response.statusCode).json(response.body);
   } catch (error) {
     return next(error);
   }

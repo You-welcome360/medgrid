@@ -139,7 +139,9 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <span className="text-xs font-bold">M</span>
             </div>
-            <span className="font-semibold text-sm text-sidebar-foreground">MedGrid</span>
+            <span className="font-semibold text-sm text-sidebar-foreground">
+              MedGrid
+            </span>
           </div>
           {onClose && (
             <Button
@@ -188,7 +190,6 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
           return <NavItem key={item.to} {...item} badge={badge} />;
         })}
       </nav>
-
     </div>
   );
 }
@@ -216,35 +217,46 @@ export function DashboardLayout() {
     ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
     : 'U';
 
-  const socketEvents = useMemo(() => ({
-    'request:created': (data: any) => {
-      toast.info(`New request: ${data.itemName || 'item'} (${data.quantity} ${data.unit || ''})`);
-      queryClient.invalidateQueries({ queryKey: ['requests'] });
-    },
-    'request:acknowledged': (data: any) => {
-      toast.success(`Request acknowledged: ${data.itemName || 'item'}`);
-      queryClient.invalidateQueries({ queryKey: ['requests'] });
-    },
-    'request:fulfilled': (data: any) => {
-      toast.success(`Request fulfilled: ${data.itemName || 'item'}`);
-      queryClient.invalidateQueries({ queryKey: ['requests'] });
-      queryClient.invalidateQueries({ queryKey: ['facilities'] });
-    },
-    'request:canceled': (data: any) => {
-      toast.warning(`Request canceled: ${data.itemName || 'item'}`);
-      queryClient.invalidateQueries({ queryKey: ['requests'] });
-    },
-    'balance:topup': (data: any) => {
-      toast.success(`Balance top-up successful! New balance: ₵${Number(data.newBalance || data.balance || 0).toFixed(2)}`);
-      queryClient.invalidateQueries({ queryKey: ['facilities'] });
-    },
-    'balance:low': (data: any) => {
-      toast.error(`Warning: Balance is low! Current: ₵${Number(data.currentBalance || data.balance || 0).toFixed(2)}`);
-      queryClient.invalidateQueries({ queryKey: ['facilities'] });
-    },
-  }), [queryClient]);
+  const socketEvents = useMemo(
+    () => ({
+      'request:created': (data: Record<string, unknown>) => {
+        toast.info(
+          `New request: ${String(data.itemName || 'item')} (${String(data.quantity ?? '')} ${String(data.unit || '')})`
+        );
+        queryClient.invalidateQueries({ queryKey: ['requests'] });
+      },
+      'request:acknowledged': (data: Record<string, unknown>) => {
+        toast.success(
+          `Request acknowledged: ${String(data.itemName || 'item')}`
+        );
+        queryClient.invalidateQueries({ queryKey: ['requests'] });
+      },
+      'request:fulfilled': (data: Record<string, unknown>) => {
+        toast.success(`Request fulfilled: ${String(data.itemName || 'item')}`);
+        queryClient.invalidateQueries({ queryKey: ['requests'] });
+        queryClient.invalidateQueries({ queryKey: ['facilities'] });
+      },
+      'request:canceled': (data: Record<string, unknown>) => {
+        toast.warning(`Request canceled: ${String(data.itemName || 'item')}`);
+        queryClient.invalidateQueries({ queryKey: ['requests'] });
+      },
+      'balance:topup': (data: Record<string, unknown>) => {
+        toast.success(
+          `Balance top-up successful! New balance: ₵${Number(data.newBalance || data.balance || 0).toFixed(2)}`
+        );
+        queryClient.invalidateQueries({ queryKey: ['facilities'] });
+      },
+      'balance:low': (data: Record<string, unknown>) => {
+        toast.error(
+          `Warning: Balance is low! Current: ₵${Number(data.currentBalance || data.balance || 0).toFixed(2)}`
+        );
+        queryClient.invalidateQueries({ queryKey: ['facilities'] });
+      },
+    }),
+    [queryClient]
+  );
 
-  useSocket(socketEvents);
+  useSocket(socketEvents as Record<string, (...args: unknown[]) => void>);
 
   return (
     <div className="flex h-screen bg-background">
@@ -274,9 +286,11 @@ export function DashboardLayout() {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            
+
             <span className="font-semibold text-foreground hidden lg:inline">
-              {facility ? `${facility.name} • ${facility.type.replace('_', ' ')}` : 'System Management'}
+              {facility
+                ? `${facility.name} • ${facility.type.replace('_', ' ')}`
+                : 'System Management'}
             </span>
             <span className="font-semibold text-foreground lg:hidden">
               {facility ? facility.name : 'MedGrid'}
@@ -322,11 +336,17 @@ export function DashboardLayout() {
                   </p>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/settings')}>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => navigate('/settings')}
+                >
                   Settings
                 </DropdownMenuItem>
                 {user?.facilityId && (
-                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/balance')}>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => navigate('/balance')}
+                  >
                     Balance
                   </DropdownMenuItem>
                 )}

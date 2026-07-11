@@ -41,7 +41,11 @@ const getInventoryHeaders = (req: Request, res: Response) => {
 
   return {
     authorizationHeader: req.headers.authorization,
-    facilityId: user.facilityId ?? '',
+    facilityId:
+      (req.headers['x-facility-id'] as string) ||
+      res.locals.targetFacilityId ||
+      user.facilityId ||
+      '',
     userId: user.id,
   };
 };
@@ -376,7 +380,12 @@ export const setPriceController = async (
     const id = req.params['id'] as string;
     const { price } = req.body;
 
-    if (price === undefined || price === null || isNaN(Number(price)) || Number(price) < 0) {
+    if (
+      price === undefined ||
+      price === null ||
+      isNaN(Number(price)) ||
+      Number(price) < 0
+    ) {
       return next(createValidationError('Price must be a non-negative number'));
     }
 
@@ -466,7 +475,10 @@ export const claimRedistributionOfferController = async (
     const offerId = req.params['offerId'] as string;
     const headers = getInventoryHeaders(req, res);
 
-    const claimRes = await claimRedistributionOfferInFacilityService(offerId, headers);
+    const claimRes = await claimRedistributionOfferInFacilityService(
+      offerId,
+      headers
+    );
 
     return res.status(200).json(claimRes);
   } catch (error) {

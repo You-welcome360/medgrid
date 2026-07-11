@@ -104,7 +104,7 @@ export function CreateRequestForm({ onSuccess }: CreateRequestFormProps) {
       supplyingFacilityId: state?.supplyingFacilityId ?? '',
       itemName: state?.itemName ?? '',
       priority: 'MEDIUM',
-      unit: (state?.unit as any) ?? 'UNITS',
+      unit: (state?.unit as CreateRequestForm['unit']) ?? 'UNITS',
       quantity: state?.quantity ?? 1,
       description: state?.description ?? '',
     },
@@ -157,12 +157,16 @@ export function CreateRequestForm({ onSuccess }: CreateRequestFormProps) {
   useEffect(() => {
     if (isFirstRun) {
       setIsFirstRun(false);
-      if (selectedFacilityId === initialFacility && selectedType === initialResourceType) {
+      if (
+        selectedFacilityId === initialFacility &&
+        selectedType === initialResourceType
+      ) {
         return;
       }
     }
     form.setValue('itemName', '');
     form.setValue('unit', 'UNITS');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFacilityId, selectedType, form]);
 
   // Auto-fill unit when item changes

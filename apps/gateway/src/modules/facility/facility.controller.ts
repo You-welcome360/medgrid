@@ -1,6 +1,10 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import { CreateFacilitySchema, UpdateFacilitySchema, createValidationError } from '@medgrid/shared';
+import {
+  CreateFacilitySchema,
+  UpdateFacilitySchema,
+  createValidationError,
+} from '@medgrid/shared';
 
 import {
   createFacilityInFacilityService,
@@ -27,7 +31,7 @@ export const createFacilityController = async (
 
     const response = await createFacilityInFacilityService(result.data);
 
-    return res.status(201).json(response);
+    return res.status(response.statusCode).json(response.body);
   } catch (error) {
     return next(error);
   }
@@ -40,7 +44,7 @@ export const getAllFacilitiesController = async (
 ) => {
   try {
     const response = await getAllFacilitiesFromFacilityService();
-    return res.status(200).json(response);
+    return res.status(response.statusCode).json(response.body);
   } catch (error) {
     return next(error);
   }
@@ -54,7 +58,7 @@ export const getFacilityByIdController = async (
   try {
     const id = req.params['id'] as string;
     const response = await getFacilityByIdFromFacilityService(id);
-    return res.status(200).json(response);
+    return res.status(response.statusCode).json(response.body);
   } catch (error) {
     return next(error);
   }
@@ -74,7 +78,7 @@ export const updateFacilityController = async (
     }
 
     const response = await updateFacilityInFacilityService(id, result.data);
-    return res.status(200).json(response);
+    return res.status(response.statusCode).json(response.body);
   } catch (error) {
     return next(error);
   }
@@ -89,7 +93,9 @@ export const getFacilityBalanceController = async (
     const user = res.locals.user;
     const facilityId = user?.facilityId;
     if (!facilityId) {
-      return res.status(400).json({ success: false, message: 'Facility ID is required' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Facility ID is required' });
     }
     const response = await getFacilityBalanceFromFacilityService(facilityId);
     return res.status(200).json(response);
@@ -107,9 +113,14 @@ export const initializeFacilityTopUpController = async (
     const user = res.locals.user;
     const facilityId = user?.facilityId;
     if (!facilityId) {
-      return res.status(400).json({ success: false, message: 'Facility ID is required' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Facility ID is required' });
     }
-    const response = await initializeFacilityTopUpInFacilityService(facilityId, req.body);
+    const response = await initializeFacilityTopUpInFacilityService(
+      facilityId,
+      req.body
+    );
     return res.status(200).json(response);
   } catch (error) {
     return next(error);
@@ -125,9 +136,14 @@ export const getFacilityBalanceHistoryController = async (
     const user = res.locals.user;
     const facilityId = user?.facilityId;
     if (!facilityId) {
-      return res.status(400).json({ success: false, message: 'Facility ID is required' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Facility ID is required' });
     }
-    const response = await getFacilityBalanceHistoryFromFacilityService(facilityId, req.query);
+    const response = await getFacilityBalanceHistoryFromFacilityService(
+      facilityId,
+      req.query
+    );
     return res.status(200).json(response);
   } catch (error) {
     return next(error);
@@ -141,14 +157,17 @@ export const paystackWebhookController = async (
 ) => {
   try {
     const signature = req.headers['x-paystack-signature'] as string | undefined;
-    const rawBody = (req as any).rawBody 
-      ? (req as any).rawBody.toString('utf8') 
+    const rawBody = (req as Request & { rawBody?: Buffer }).rawBody
+      ? (req as Request & { rawBody?: Buffer }).rawBody!.toString('utf8')
       : JSON.stringify(req.body);
 
-    const response = await relayPaystackWebhookToFacilityService(rawBody, signature, req.body);
+    const response = await relayPaystackWebhookToFacilityService(
+      rawBody,
+      signature,
+      req.body
+    );
     return res.status(200).json(response);
   } catch (error) {
     return next(error);
   }
 };
-

@@ -14,7 +14,14 @@ import {
   useCreateRedistributionOffer,
 } from '@/features/inventory/hooks/use-inventory';
 import { RecordMovementDialog } from './record-movement-dialog';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 
@@ -73,7 +80,10 @@ export function InventoryItemDetail({ id }: InventoryItemDetailProps) {
   const [postQuantity, setPostQuantity] = useState('1');
   const [postPrice, setPostPrice] = useState('0');
 
-  const activeExpiryAlert = expiryAlerts.find((a: any) => a.inventoryId === id && !a.resolvedAt);
+  const activeExpiryAlert = expiryAlerts.find(
+    (a: { inventoryId: string; resolvedAt?: string | null }) =>
+      a.inventoryId === id && !a.resolvedAt
+  );
 
   if (isLoading) {
     return (
@@ -114,13 +124,16 @@ export function InventoryItemDetail({ id }: InventoryItemDetailProps) {
                   </span>
                 )}
                 {activeExpiryAlert && (
-                  <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold border ${
-                    activeExpiryAlert.severity === 'CRITICAL'
-                      ? 'bg-red-500/15 text-red-700 border-red-500/30'
-                      : 'bg-amber-500/15 text-amber-700 border-amber-500/30'
-                  }`}>
+                  <span
+                    className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold border ${
+                      activeExpiryAlert.severity === 'CRITICAL'
+                        ? 'bg-red-500/15 text-red-700 border-red-500/30'
+                        : 'bg-amber-500/15 text-amber-700 border-amber-500/30'
+                    }`}
+                  >
                     <AlertTriangle className="h-3.5 w-3.5" />
-                    Expiry Alert: {activeExpiryAlert.severity} ({activeExpiryAlert.daysToExpiry} days left)
+                    Expiry Alert: {activeExpiryAlert.severity} (
+                    {activeExpiryAlert.daysToExpiry} days left)
                   </span>
                 )}
               </div>
@@ -220,7 +233,9 @@ export function InventoryItemDetail({ id }: InventoryItemDetailProps) {
                 <div className="flex justify-between border-b pb-1">
                   <span className="text-muted-foreground">Unit Price</span>
                   <span className="font-medium">
-                    {item.price !== undefined && item.price !== null ? `GH₵${item.price.toFixed(2)}` : '—'}
+                    {item.price !== undefined && item.price !== null
+                      ? `GH₵${item.price.toFixed(2)}`
+                      : '—'}
                   </span>
                 </div>
                 <div className="flex justify-between border-b pb-1">
@@ -391,7 +406,8 @@ export function InventoryItemDetail({ id }: InventoryItemDetailProps) {
           <DialogHeader>
             <DialogTitle>Post Redistribution Offer</DialogTitle>
             <DialogDescription>
-              Submit details to offer this inventory batch for inter-facility redistribution.
+              Submit details to offer this inventory batch for inter-facility
+              redistribution.
             </DialogDescription>
           </DialogHeader>
 
@@ -414,8 +430,12 @@ export function InventoryItemDetail({ id }: InventoryItemDetailProps) {
             className="space-y-4 py-2"
           >
             <div className="space-y-1">
-              <span className="text-xs text-muted-foreground block">Item Name</span>
-              <span className="font-semibold text-sm capitalize">{item.itemName}</span>
+              <span className="text-xs text-muted-foreground block">
+                Item Name
+              </span>
+              <span className="font-semibold text-sm capitalize">
+                {item.itemName}
+              </span>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -442,12 +462,18 @@ export function InventoryItemDetail({ id }: InventoryItemDetailProps) {
                   onChange={(e) => setPostPrice(e.target.value)}
                   required
                 />
-                <span className="text-[10px] text-muted-foreground block">Set to 0 for donation</span>
+                <span className="text-[10px] text-muted-foreground block">
+                  Set to 0 for donation
+                </span>
               </div>
             </div>
 
             <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => setPostDialogOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setPostDialogOpen(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={createOffer.isPending}>

@@ -14,7 +14,7 @@ import {
   List,
   Navigation,
   Mail,
-  X
+  X,
 } from 'lucide-react';
 import {
   useNetworkResources,
@@ -51,14 +51,19 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 const FACILITY_COLORS: Record<string, string> = {
-  HOSPITAL: '#ef4444',     // Red
-  BLOOD_BANK: '#3b82f6',   // Blue
-  PHARMACY: '#10b981',     // Emerald
-  PPE_SUPPLIER: '#f59e0b',  // Amber
+  HOSPITAL: '#ef4444', // Red
+  BLOOD_BANK: '#3b82f6', // Blue
+  PHARMACY: '#10b981', // Emerald
+  PPE_SUPPLIER: '#f59e0b', // Amber
 };
 
 // Haversine formula to compute distance in km
-const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+const calculateDistance = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+) => {
   const R = 6371; // Earth's radius in km
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -84,18 +89,21 @@ export default function NetworkDirectoryPage() {
   } | null>(null);
 
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-  const [selectedMapItem, setSelectedMapItem] = useState<NetworkFacilityItem | null>(null);
+  const [selectedMapItem, setSelectedMapItem] =
+    useState<NetworkFacilityItem | null>(null);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const leafletMap = useRef<L.Map | null>(null);
   const markersLayer = useRef<L.LayerGroup | null>(null);
 
-  const { data: resources = [], isLoading: resourcesLoading } = useNetworkResources();
+  const { data: resources = [], isLoading: resourcesLoading } =
+    useNetworkResources();
 
-  const { data: facilities = [], isLoading: facilitiesLoading } = useNetworkFacilities(
-    selected?.resourceType as ResourceType,
-    selected?.itemName
-  );
+  const { data: facilities = [], isLoading: facilitiesLoading } =
+    useNetworkFacilities(
+      selected?.resourceType as ResourceType,
+      selected?.itemName
+    );
 
   const filteredResources = resources.filter((r) =>
     r.itemName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -108,7 +116,12 @@ export default function NetworkDirectoryPage() {
 
   // Selected map item distance
   const selectedDistance = useMemo(() => {
-    if (!myFacility || !selectedMapItem || myFacility.id === selectedMapItem.facilityId) return null;
+    if (
+      !myFacility ||
+      !selectedMapItem ||
+      myFacility.id === selectedMapItem.facilityId
+    )
+      return null;
     return calculateDistance(
       myFacility.latitude,
       myFacility.longitude,
@@ -140,9 +153,12 @@ export default function NetworkDirectoryPage() {
         attributionControl: false,
       });
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-      }).addTo(map);
+      L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+        {
+          maxZoom: 19,
+        }
+      ).addTo(map);
 
       L.control.zoom({ position: 'bottomright' }).addTo(map);
 
@@ -183,11 +199,15 @@ export default function NetworkDirectoryPage() {
           iconAnchor: [16, 16],
         });
 
-        const marker = L.marker([item.facility.latitude, item.facility.longitude], { icon })
-          .on('click', () => {
-            setSelectedMapItem(item);
-            map.setView([item.facility.latitude, item.facility.longitude], 9, { animate: true });
+        const marker = L.marker(
+          [item.facility.latitude, item.facility.longitude],
+          { icon }
+        ).on('click', () => {
+          setSelectedMapItem(item);
+          map.setView([item.facility.latitude, item.facility.longitude], 9, {
+            animate: true,
           });
+        });
 
         marker.bindTooltip(
           `<div class="px-2 py-1 bg-white border border-slate-200 rounded shadow text-xs text-slate-900">
@@ -210,16 +230,13 @@ export default function NetworkDirectoryPage() {
     }
   }, [viewMode, facilities, myFacility, user?.facilityId]);
 
-  // Clean up selected map item when resource selection changes
-  useEffect(() => {
-    setSelectedMapItem(null);
-  }, [selected]);
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Real-Time Network Directory</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Real-Time Network Directory
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Monitor resource distribution and initiate inter-facility transfers.
           </p>
@@ -258,7 +275,9 @@ export default function NetworkDirectoryPage() {
         {/* Left Side: Resources Catalog */}
         <Card className="md:col-span-1 h-[calc(100vh-220px)] flex flex-col border-border bg-card shadow-sm">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base text-foreground">Resource Catalog</CardTitle>
+            <CardTitle className="text-base text-foreground">
+              Resource Catalog
+            </CardTitle>
             <div className="relative mt-2">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -288,12 +307,13 @@ export default function NetworkDirectoryPage() {
                   return (
                     <button
                       key={i}
-                      onClick={() =>
+                      onClick={() => {
                         setSelected({
                           resourceType: resource.resourceType as ResourceType,
                           itemName: resource.itemName,
-                        })
-                      }
+                        });
+                        setSelectedMapItem(null);
+                      }}
                       className={`w-full text-left rounded-lg border p-3 transition-colors ${
                         isCurrent
                           ? 'border-primary bg-primary/5'
@@ -310,12 +330,15 @@ export default function NetworkDirectoryPage() {
                             TYPE_COLORS[resource.resourceType] || ''
                           }`}
                         >
-                          {TYPE_LABELS[resource.resourceType] ?? resource.resourceType}
+                          {TYPE_LABELS[resource.resourceType] ??
+                            resource.resourceType}
                         </Badge>
                       </div>
                       <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                         <span>
-                          {resource.isMovable ? 'Movable Product' : 'Fixed Resource'}
+                          {resource.isMovable
+                            ? 'Movable Product'
+                            : 'Fixed Resource'}
                         </span>
                       </div>
                     </button>
@@ -339,7 +362,8 @@ export default function NetworkDirectoryPage() {
                       TYPE_COLORS[selected.resourceType] || ''
                     }`}
                   >
-                    {TYPE_LABELS[selected.resourceType] ?? selected.resourceType}
+                    {TYPE_LABELS[selected.resourceType] ??
+                      selected.resourceType}
                   </Badge>
                 </CardTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
@@ -348,9 +372,12 @@ export default function NetworkDirectoryPage() {
               </div>
             ) : (
               <div>
-                <CardTitle className="text-base text-foreground">Supplier Details</CardTitle>
+                <CardTitle className="text-base text-foreground">
+                  Supplier Details
+                </CardTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Select an item from the left catalog to display supplying facilities.
+                  Select an item from the left catalog to display supplying
+                  facilities.
                 </p>
               </div>
             )}
@@ -359,9 +386,12 @@ export default function NetworkDirectoryPage() {
             {!selected ? (
               <div className="flex h-full flex-col items-center justify-center p-8 text-center">
                 <Package className="h-10 w-10 text-muted-foreground mb-3 opacity-60" />
-                <h3 className="font-semibold text-sm text-foreground">No Resource Selected</h3>
+                <h3 className="font-semibold text-sm text-foreground">
+                  No Resource Selected
+                </h3>
                 <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-                  Choose a resource type or name from the catalog list to locate hosting facilities.
+                  Choose a resource type or name from the catalog list to locate
+                  hosting facilities.
                 </p>
               </div>
             ) : facilitiesLoading ? (
@@ -371,28 +401,46 @@ export default function NetworkDirectoryPage() {
             ) : facilities.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center p-8 text-center">
                 <AlertCircle className="h-8 w-8 text-orange-500 mb-2" />
-                <h3 className="font-semibold text-sm text-orange-700">Out of Stock</h3>
+                <h3 className="font-semibold text-sm text-orange-700">
+                  Out of Stock
+                </h3>
                 <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-                  There are currently no active, available quantities of this item in the network.
+                  There are currently no active, available quantities of this
+                  item in the network.
                 </p>
               </div>
             ) : viewMode === 'list' ? (
               <Table>
                 <TableHeader className="bg-muted/50">
                   <TableRow className="border-border hover:bg-muted/20">
-                    <TableHead className="text-muted-foreground">Facility</TableHead>
-                    <TableHead className="text-muted-foreground">Location</TableHead>
-                    <TableHead className="text-muted-foreground">Contact</TableHead>
-                    <TableHead className="text-right text-muted-foreground">Available</TableHead>
-                    <TableHead className="text-right text-muted-foreground">Price</TableHead>
+                    <TableHead className="text-muted-foreground">
+                      Facility
+                    </TableHead>
+                    <TableHead className="text-muted-foreground">
+                      Location
+                    </TableHead>
+                    <TableHead className="text-muted-foreground">
+                      Contact
+                    </TableHead>
+                    <TableHead className="text-right text-muted-foreground">
+                      Available
+                    </TableHead>
+                    <TableHead className="text-right text-muted-foreground">
+                      Price
+                    </TableHead>
                     <TableHead className="w-28 text-right text-muted-foreground" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {facilities.map((item, i) => (
-                    <TableRow key={i} className="border-border hover:bg-muted/30">
+                    <TableRow
+                      key={i}
+                      className="border-border hover:bg-muted/30"
+                    >
                       <TableCell>
-                        <div className="font-semibold text-sm text-foreground">{item.facility.name}</div>
+                        <div className="font-semibold text-sm text-foreground">
+                          {item.facility.name}
+                        </div>
                         <div className="text-[10px] text-muted-foreground mt-0.5 uppercase tracking-wider font-semibold">
                           {item.facility.type.replace('_', ' ')}
                         </div>
@@ -471,10 +519,13 @@ export default function NetworkDirectoryPage() {
                           className="h-1.5 w-1.5 rounded-full"
                           style={{
                             backgroundColor:
-                              FACILITY_COLORS[selectedMapItem.facility.type] || '#4f46e5',
+                              FACILITY_COLORS[selectedMapItem.facility.type] ||
+                              '#4f46e5',
                           }}
                         />
-                        {selectedMapItem.facility.type.replace('_', ' ').toLowerCase()}
+                        {selectedMapItem.facility.type
+                          .replace('_', ' ')
+                          .toLowerCase()}
                       </p>
                     </div>
 
@@ -482,7 +533,8 @@ export default function NetworkDirectoryPage() {
                     {selectedDistance !== null && (
                       <div className="bg-muted border border-border p-2.5 rounded-lg flex items-center justify-between text-xs mt-3">
                         <span className="text-muted-foreground flex items-center gap-1">
-                          <Navigation className="h-3.5 w-3.5 text-primary" /> Distance from you
+                          <Navigation className="h-3.5 w-3.5 text-primary" />{' '}
+                          Distance from you
                         </span>
                         <span className="font-semibold text-foreground font-mono">
                           {selectedDistance.toFixed(1)} km
@@ -495,7 +547,8 @@ export default function NetworkDirectoryPage() {
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                         <span className="truncate">
-                          {selectedMapItem.facility.district}, {selectedMapItem.facility.region}
+                          {selectedMapItem.facility.district},{' '}
+                          {selectedMapItem.facility.region}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground">
@@ -504,22 +557,31 @@ export default function NetworkDirectoryPage() {
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                        <span className="truncate">{selectedMapItem.facility.email}</span>
+                        <span className="truncate">
+                          {selectedMapItem.facility.email}
+                        </span>
                       </div>
                     </div>
 
                     {/* Availability details */}
                     <div className="border-t border-border/60 pt-3 mt-3 flex justify-between items-center text-xs">
                       <div>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Available Stock</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                          Available Stock
+                        </p>
                         <p className="font-bold text-foreground text-sm mt-0.5">
-                          {selectedMapItem.quantity.toLocaleString()} {selectedMapItem.unit.toLowerCase()}
+                          {selectedMapItem.quantity.toLocaleString()}{' '}
+                          {selectedMapItem.unit.toLowerCase()}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Unit Cost</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                          Unit Cost
+                        </p>
                         <p className="font-bold text-foreground text-sm mt-0.5">
-                          {selectedMapItem.price !== null ? `₵${selectedMapItem.price.toFixed(2)}` : '—'}
+                          {selectedMapItem.price !== null
+                            ? `₵${selectedMapItem.price.toFixed(2)}`
+                            : '—'}
                         </p>
                       </div>
                     </div>
