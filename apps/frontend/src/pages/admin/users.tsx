@@ -55,7 +55,10 @@ import type { UserStatus } from '@/types';
 // Types
 // ============================================================
 
-type AssignableRole = 'SUPER_ADMIN' | 'COORDINATION_MANAGER' | 'INVENTORY_MANAGER';
+type AssignableRole =
+  | 'SUPER_ADMIN'
+  | 'COORDINATION_MANAGER'
+  | 'INVENTORY_MANAGER';
 
 interface InviteResult {
   email: string;
@@ -90,18 +93,6 @@ function InviteResultDialog({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const sendEmail = () => {
-    const subject = encodeURIComponent('You have been invited to MedGrid');
-    const roleLabel = ROLE_LABELS[result.role] ?? result.role;
-    const body = encodeURIComponent(
-      `Hello,\n\nYou have been invited to join MedGrid as a ${roleLabel}.\n\n` +
-        `Click the link below to complete your registration:\n${inviteLink}\n\n` +
-        `This link expires on ${new Date(result.expiresAt).toLocaleDateString()}.\n\n` +
-        `MedGrid Team`
-    );
-    window.open(`mailto:${result.email}?subject=${subject}&body=${body}`);
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -112,7 +103,9 @@ function InviteResultDialog({
             </div>
             <div>
               <DialogTitle>Invitation Created</DialogTitle>
-              <DialogDescription>Share this link with {result.email}</DialogDescription>
+              <DialogDescription>
+                An email invitation has been sent to {result.email}
+              </DialogDescription>
             </div>
           </div>
         </DialogHeader>
@@ -125,7 +118,9 @@ function InviteResultDialog({
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Role</span>
-              <span className="font-medium">{ROLE_LABELS[result.role] ?? result.role}</span>
+              <span className="font-medium">
+                {ROLE_LABELS[result.role] ?? result.role}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Expires</span>
@@ -136,7 +131,11 @@ function InviteResultDialog({
           <div className="space-y-2">
             <Label>Invitation Link</Label>
             <div className="flex items-center gap-2">
-              <Input readOnly value={inviteLink} className="font-mono text-xs" />
+              <Input
+                readOnly
+                value={inviteLink}
+                className="font-mono text-xs"
+              />
               <Button
                 variant="outline"
                 size="icon-sm"
@@ -152,22 +151,15 @@ function InviteResultDialog({
             </div>
           </div>
 
-          <Alert className="border-orange-200 bg-orange-50 dark:border-orange-900/30 dark:bg-orange-950/20">
-            <AlertDescription className="text-xs text-orange-700 dark:text-orange-400">
-              This link is shown <strong>once</strong>. Send it to the user
-              before closing.
+          <Alert className="border-blue-200 bg-blue-50/50 dark:border-blue-900/30 dark:bg-blue-950/10">
+            <AlertDescription className="text-xs text-blue-700 dark:text-blue-400">
+              An invitation email has been sent. You can also copy the link
+              above to share it manually.
             </AlertDescription>
           </Alert>
         </div>
 
-        <DialogFooter className="flex-col gap-2 sm:flex-row">
-          <Button
-            variant="outline"
-            className="w-full sm:w-auto"
-            onClick={sendEmail}
-          >
-            Send via Email
-          </Button>
+        <DialogFooter className="justify-end">
           <Button
             className="w-full sm:w-auto"
             onClick={() => onOpenChange(false)}
@@ -295,7 +287,9 @@ function InviteUserDialog({
               placeholder="user@organization.org"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && canSubmit && handleSubmit()}
+              onKeyDown={(e) =>
+                e.key === 'Enter' && canSubmit && handleSubmit()
+              }
             />
           </div>
 
@@ -330,7 +324,9 @@ function InviteUserDialog({
                   <div className="flex items-center gap-2">
                     <ShieldAlert className="h-3.5 w-3.5 text-destructive shrink-0" />
                     <div>
-                      <p className="font-medium text-destructive">Super Admin</p>
+                      <p className="font-medium text-destructive">
+                        Super Admin
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         Full system access — requires password confirmation
                       </p>
@@ -353,7 +349,9 @@ function InviteUserDialog({
                 <>
                   <div className="flex items-center gap-2 text-sm text-destructive font-medium">
                     <Lock className="h-4 w-4 shrink-0" />
-                    <span>Confirm your identity to grant Super Admin access</span>
+                    <span>
+                      Confirm your identity to grant Super Admin access
+                    </span>
                   </div>
                   <div className="space-y-2">
                     <div className="relative">
@@ -376,9 +374,7 @@ function InviteUserDialog({
                       <button
                         type="button"
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                        onClick={() =>
-                          setShowElevationPassword((p) => !p)
-                        }
+                        onClick={() => setShowElevationPassword((p) => !p)}
                         tabIndex={-1}
                       >
                         {showElevationPassword ? (
@@ -389,7 +385,9 @@ function InviteUserDialog({
                       </button>
                     </div>
                     {elevationError && (
-                      <p className="text-xs text-destructive">{elevationError}</p>
+                      <p className="text-xs text-destructive">
+                        {elevationError}
+                      </p>
                     )}
                     <Button
                       variant="outline"

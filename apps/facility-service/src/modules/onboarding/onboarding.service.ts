@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import bcrypt from 'bcrypt';
 
-import { writeAuditLog, AuditAction } from '@medgrid/database';
+import { writeAuditLog, AuditAction, prisma } from '@medgrid/database';
 import {
   createNotFoundError,
   createConflictError,
@@ -11,6 +11,7 @@ import {
   type ApproveOnboardingResponseDTO,
   OnboardingRequestStatus,
 } from '@medgrid/shared';
+import { sendMail, facilityApprovedEmail } from '@medgrid/notifications';
 
 import {
   createOnboardingRequest,
@@ -60,14 +61,28 @@ const toOnboardingRequestDTO = (
 export const submitOnboardingRequest = async (
   data: SubmitOnboardingRequestDTO
 ): Promise<OnboardingRequestDTO> => {
-  const existing = await findOnboardingRequestByAdminEmail(
-    data.adminEmail.trim().toLowerCase()
-  );
+  const adminEmail = data.adminEmail.trim().toLowerCase();
+  const facilityEmail = data.facilityEmail.trim().toLowerCase();
 
-  if (existing) {
+  const existingRequest = await findOnboardingRequestByAdminEmail(adminEmail);
+  if (existingRequest) {
     throw createConflictError(
       'An onboarding request with this admin email already exists'
     );
+  }
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email: adminEmail },
+  });
+  if (existingUser && !existingUser.deletedAt) {
+    throw createConflictError('A user with this email already exists');
+  }
+
+  const existingFacility = await prisma.facility.findUnique({
+    where: { email: facilityEmail },
+  });
+  if (existingFacility) {
+    throw createConflictError('A facility with this email already exists');
   }
 
   try {
@@ -202,6 +217,22 @@ export const approveRequest = async (
     facilityId: facility.id,
     newValue: { email: admin.email, role: admin.role },
   });
+
+  // Send onboarding approval email asynchronously (non-blocking)
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  sendMail({
+    to: admin.email,
+    ...facilityApprovedEmail({
+      adminFirstName: request.adminFirstName,
+      adminLastName: request.adminLastName,
+      facilityName: facility.name,
+      adminEmail: admin.email,
+      temporaryPassword,
+      loginUrl: frontendUrl,
+    }),
+  }).catch((err) =>
+    console.error('[Onboarding] Failed to send approval email:', err.message)
+  );
 
   return {
     facilityId: facility.id,

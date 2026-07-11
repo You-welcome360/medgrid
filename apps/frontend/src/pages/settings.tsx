@@ -1,13 +1,16 @@
 import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod/v3';
-import { Loader2, Sun, Moon, Monitor } from 'lucide-react';
+import { Loader2, Sun, Moon, Monitor, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFacility } from '@/features/facilities/hooks/use-facilities';
 import { facilitiesApi } from '@/api/facilities.api';
-import { useNotificationPreferences, useUpdatePreferences } from '@/hooks/use-notifications';
+import {
+  useNotificationPreferences,
+  useUpdatePreferences,
+} from '@/hooks/use-notifications';
 
 import { authApi } from '@/api/auth.api';
 import { useAuthStore } from '@/stores/auth.store';
@@ -266,14 +269,28 @@ function AccountSection() {
 // ============================================================
 
 const facilitySchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().min(5, 'Phone must be at least 5 characters'),
-  region: z.string().min(2, 'Region must be at least 2 characters'),
-  district: z.string().min(2, 'District must be at least 2 characters'),
+  name: z.string().trim().min(2, 'Name must be at least 2 characters'),
+  email: z.string().trim().email('Invalid email address'),
+  phone: z.string().trim().min(5, 'Phone must be at least 5 characters'),
+  region: z.string().trim().min(2, 'Region must be at least 2 characters'),
+  district: z.string().trim().min(2, 'District must be at least 2 characters'),
   addressLine: z.string().optional().or(z.literal('')),
-  latitude: z.coerce.number().min(-90).max(90, 'Latitude must be between -90 and 90'),
-  longitude: z.coerce.number().min(-180).max(180, 'Longitude must be between -180 and 180'),
+  latitude: z.preprocess(
+    (val) =>
+      val === '' || val === undefined || val === null ? undefined : val,
+    z.coerce
+      .number({ required_error: 'Latitude is required' })
+      .min(-90)
+      .max(90, 'Latitude must be between -90 and 90')
+  ),
+  longitude: z.preprocess(
+    (val) =>
+      val === '' || val === undefined || val === null ? undefined : val,
+    z.coerce
+      .number({ required_error: 'Longitude is required' })
+      .min(-180)
+      .max(180, 'Longitude must be between -180 and 180')
+  ),
 });
 
 type FacilityForm = z.infer<typeof facilitySchema>;
@@ -282,12 +299,14 @@ function FacilityProfileSection() {
   const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
 
-  if (!user || !user.facilityId) return null;
-
-  const { data: facility, isLoading, error } = useFacility(user.facilityId);
+  const {
+    data: facility,
+    isLoading,
+    error,
+  } = useFacility(user?.facilityId || '');
 
   const form = useForm<FacilityForm>({
-    resolver: zodResolver(facilitySchema),
+    resolver: zodResolver(facilitySchema) as Resolver<FacilityForm>,
     defaultValues: {
       name: '',
       email: '',
@@ -299,6 +318,52 @@ function FacilityProfileSection() {
       longitude: 0,
     },
   });
+
+  const [isDetectingLocation, setIsDetectingLocation] = React.useState(false);
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser');
+      return;
+    }
+
+    setIsDetectingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        form.setValue('latitude', position.coords.latitude, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+        form.setValue('longitude', position.coords.longitude, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+        toast.success('Location coordinates detected successfully');
+        setIsDetectingLocation(false);
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            toast.error(
+              'Location permission denied. Please allow location access.'
+            );
+            break;
+          case error.POSITION_UNAVAILABLE:
+            toast.error('Location information is unavailable.');
+            break;
+          case error.TIMEOUT:
+            toast.error('Location request timed out.');
+            break;
+          default:
+            toast.error('Failed to detect location.');
+            break;
+        }
+        setIsDetectingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   useEffect(() => {
     if (facility) {
@@ -315,7 +380,46 @@ function FacilityProfileSection() {
     }
   }, [facility, form]);
 
+  if (!user || !user.facilityId) return null;
+
   const onSubmit = async (data: FacilityForm) => {
+    if (!data.name?.trim()) {
+      toast.error('Facility Name is required');
+      return;
+    }
+    if (!data.email?.trim()) {
+      toast.error('Contact Email is required');
+      return;
+    }
+    if (!data.phone?.trim()) {
+      toast.error('Phone Number is required');
+      return;
+    }
+    if (!data.region?.trim()) {
+      toast.error('Region is required');
+      return;
+    }
+    if (!data.district?.trim()) {
+      toast.error('District is required');
+      return;
+    }
+    if (
+      data.latitude === undefined ||
+      data.latitude === null ||
+      isNaN(data.latitude)
+    ) {
+      toast.error('Valid Latitude is required');
+      return;
+    }
+    if (
+      data.longitude === undefined ||
+      data.longitude === null ||
+      isNaN(data.longitude)
+    ) {
+      toast.error('Valid Longitude is required');
+      return;
+    }
+
     try {
       await facilitiesApi.update(user.facilityId!, {
         facilityName: data.name,
@@ -347,7 +451,9 @@ function FacilityProfileSection() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Facility Profile & Location</CardTitle>
+          <CardTitle className="text-base">
+            Facility Profile & Location
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="h-10 bg-slate-800/50 animate-pulse rounded" />
@@ -361,10 +467,14 @@ function FacilityProfileSection() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Facility Profile & Location</CardTitle>
+          <CardTitle className="text-base">
+            Facility Profile & Location
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-red-400">Failed to load facility profile details.</p>
+          <p className="text-sm text-red-400">
+            Failed to load facility profile details.
+          </p>
         </CardContent>
       </Card>
     );
@@ -457,6 +567,26 @@ function FacilityProfileSection() {
                   </FormItem>
                 )}
               />
+              <div className="md:col-span-2 flex items-center justify-between mt-2 pt-2 border-t border-slate-800">
+                <span className="text-sm font-semibold text-slate-200">
+                  Coordinates
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1.5 text-xs h-8 border-slate-700 hover:bg-slate-800"
+                  onClick={handleDetectLocation}
+                  disabled={isDetectingLocation}
+                >
+                  {isDetectingLocation ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <MapPin className="h-3.5 w-3.5 text-sky-400" />
+                  )}
+                  {isDetectingLocation ? 'Detecting...' : 'Detect Location'}
+                </Button>
+              </div>
               <FormField
                 control={form.control}
                 name="latitude"
@@ -530,13 +660,18 @@ function NotificationPreferencesSection() {
           <CardTitle className="text-base">Notification Settings</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-red-400">Failed to load notification settings.</p>
+          <p className="text-sm text-red-400">
+            Failed to load notification settings.
+          </p>
         </CardContent>
       </Card>
     );
   }
 
-  const handleToggle = (channel: 'push' | 'email', field: 'enabled' | 'emergencyOnly') => {
+  const handleToggle = (
+    channel: 'push' | 'email',
+    field: 'enabled' | 'emergencyOnly'
+  ) => {
     const pushVal = { ...prefs.push };
     const emailVal = { ...prefs.email };
 
@@ -556,12 +691,15 @@ function NotificationPreferencesSection() {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-4">
-          
           {/* Websocket */}
           <div className="flex items-start justify-between p-3 rounded-lg bg-slate-950/40 border border-slate-900">
             <div className="space-y-0.5">
-              <label className="text-sm font-semibold text-white">In-App Live Stream</label>
-              <p className="text-xs text-gray-400">Real-time alerts displayed instantly on screen</p>
+              <label className="text-sm font-semibold text-white">
+                In-App Live Stream
+              </label>
+              <p className="text-xs text-gray-400">
+                Real-time alerts displayed instantly on screen
+              </p>
             </div>
             <span className="text-[10px] uppercase font-bold text-indigo-400 px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">
               Always On
@@ -572,8 +710,12 @@ function NotificationPreferencesSection() {
           <div className="space-y-3 p-3 rounded-lg border border-slate-800 bg-slate-900/10">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <label className="text-sm font-semibold text-white">Email Messages</label>
-                <p className="text-xs text-gray-400">Receive summaries and requests via mail</p>
+                <label className="text-sm font-semibold text-white">
+                  Email Messages
+                </label>
+                <p className="text-xs text-gray-400">
+                  Receive summaries and requests via mail
+                </p>
               </div>
               <input
                 type="checkbox"
@@ -585,8 +727,12 @@ function NotificationPreferencesSection() {
             {prefs.email.enabled && (
               <div className="flex items-center justify-between pl-4 border-l border-slate-800 pt-2">
                 <div className="space-y-0.5">
-                  <label className="text-xs font-medium text-gray-300">Only Emergency Announcements</label>
-                  <p className="text-[10px] text-gray-500">Mute normal notifications, alert only on emergency alerts</p>
+                  <label className="text-xs font-medium text-gray-300">
+                    Only Emergency Announcements
+                  </label>
+                  <p className="text-[10px] text-gray-500">
+                    Mute normal notifications, alert only on emergency alerts
+                  </p>
                 </div>
                 <input
                   type="checkbox"
@@ -602,8 +748,12 @@ function NotificationPreferencesSection() {
           <div className="space-y-3 p-3 rounded-lg border border-slate-800 bg-slate-900/10">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <label className="text-sm font-semibold text-white">Push Notifications</label>
-                <p className="text-xs text-gray-400">Receive native browser alerts for critical events</p>
+                <label className="text-sm font-semibold text-white">
+                  Push Notifications
+                </label>
+                <p className="text-xs text-gray-400">
+                  Receive native browser alerts for critical events
+                </p>
               </div>
               <input
                 type="checkbox"
@@ -615,8 +765,12 @@ function NotificationPreferencesSection() {
             {prefs.push.enabled && (
               <div className="flex items-center justify-between pl-4 border-l border-slate-800 pt-2">
                 <div className="space-y-0.5">
-                  <label className="text-xs font-medium text-gray-300">Only Emergency Announcements</label>
-                  <p className="text-[10px] text-gray-500">Mute normal notifications, alert only on emergency alerts</p>
+                  <label className="text-xs font-medium text-gray-300">
+                    Only Emergency Announcements
+                  </label>
+                  <p className="text-[10px] text-gray-500">
+                    Mute normal notifications, alert only on emergency alerts
+                  </p>
                 </div>
                 <input
                   type="checkbox"
@@ -627,7 +781,6 @@ function NotificationPreferencesSection() {
               </div>
             )}
           </div>
-
         </div>
       </CardContent>
     </Card>

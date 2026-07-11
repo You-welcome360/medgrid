@@ -6,6 +6,7 @@ import {
   AuditAction,
   UserStatus,
   UserRole,
+  prisma,
 } from '@medgrid/database';
 import {
   createNotFoundError,
@@ -24,6 +25,7 @@ import {
 
 import { env } from '../../config/env';
 import { findUserByEmail, findUserById } from '../auth/auth.repository';
+import { sendMail, userInvitationEmail } from '@medgrid/notifications';
 import {
   findUsersByFacility,
   findAllUsers,
@@ -136,6 +138,19 @@ export const inviteUser = async (
     throw createConflictError('A user with this email already exists');
   }
 
+  const existingOnboarding = await prisma.facilityOnboardingRequest.findFirst({
+    where: {
+      adminEmail: email,
+      status: 'PENDING',
+    },
+  });
+
+  if (existingOnboarding) {
+    throw createConflictError(
+      'An onboarding request with this email is currently pending'
+    );
+  }
+
   const user = await createPendingUser(
     email,
     data.role as unknown as UserRole,
@@ -165,6 +180,7 @@ export const inviteUser = async (
     invitedById
   );
 
+  console.log('[Invite] Here works');
   await writeAuditLog({
     actorId: invitedById,
     actorRole: invitedByRole,
@@ -175,13 +191,26 @@ export const inviteUser = async (
     newValue: { email, role: data.role },
   });
 
+  // Send invitation email asynchronously (non-blocking)
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const inviteLink = `${frontendUrl}/invite/complete?token=${rawToken}`;
+  sendMail({
+    to: email,
+    ...userInvitationEmail({
+      role: data.role,
+      inviteLink,
+      expiresAt,
+    }),
+  }).catch((err) =>
+    console.error('[Invite] Failed to send invitation email:', err.message)
+  );
+
   return {
     userId: user.id,
     invitationToken: rawToken,
     expiresAt: expiresAt.toISOString(),
   };
 };
-
 
 // ===========================================================================
 // Complete invitation

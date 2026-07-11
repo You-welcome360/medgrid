@@ -5,7 +5,6 @@ import {
   XCircle,
   Eye,
   Copy,
-  Mail,
   KeyRound,
   ShieldCheck,
 } from 'lucide-react';
@@ -77,23 +76,6 @@ function ApprovalResultDialog({
     toast.success('Password copied to clipboard');
   };
 
-  const sendEmail = () => {
-    const subject = encodeURIComponent(
-      `Your MedGrid Facility Account — ${result.facilityName}`
-    );
-    const body = encodeURIComponent(
-      `Dear ${result.adminFirstName} ${result.adminLastName},\n\n` +
-        `Your facility "${result.facilityName}" has been approved on MedGrid.\n\n` +
-        `Your administrator account has been created:\n` +
-        `Email: ${result.adminEmail}\n` +
-        `Temporary Password: ${result.temporaryPassword}\n\n` +
-        `Please log in at http://localhost:5173 and change your password immediately.\n\n` +
-        `Best regards,\nMedGrid Administration`
-    );
-
-    window.open(`mailto:${result.adminEmail}?subject=${subject}&body=${body}`);
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -105,7 +87,7 @@ function ApprovalResultDialog({
             <div>
               <DialogTitle>Facility Approved</DialogTitle>
               <DialogDescription className="text-sm">
-                {result.facilityName} is now active
+                An approval email has been sent to {result.adminEmail}
               </DialogDescription>
             </div>
           </div>
@@ -151,24 +133,15 @@ function ApprovalResultDialog({
             </div>
           </div>
 
-          <Alert className="border-orange-200 bg-orange-50 dark:border-orange-900/30 dark:bg-orange-950/20">
-            <AlertDescription className="text-xs text-orange-700 dark:text-orange-400">
-              This password is shown <strong>once</strong> and cannot be
-              retrieved again. Send it to the facility admin before closing this
-              dialog.
+          <Alert className="border-blue-200 bg-blue-50/50 dark:border-blue-900/30 dark:bg-blue-950/10">
+            <AlertDescription className="text-xs text-blue-700 dark:text-blue-400">
+              An email containing the temporary credentials has been sent. You
+              can also copy the password above to share manually.
             </AlertDescription>
           </Alert>
         </div>
 
-        <DialogFooter className="flex-col gap-2 sm:flex-row">
-          <Button
-            variant="outline"
-            className="w-full sm:w-auto"
-            onClick={sendEmail}
-          >
-            <Mail className="mr-2 h-4 w-4" />
-            Send via Email
-          </Button>
+        <DialogFooter className="justify-end">
           <Button
             className="w-full sm:w-auto"
             onClick={() => onOpenChange(false)}

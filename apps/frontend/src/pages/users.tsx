@@ -75,17 +75,6 @@ function InviteResultDialog({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const sendEmail = () => {
-    const subject = encodeURIComponent('You have been invited to MedGrid');
-    const body = encodeURIComponent(
-      `Hello,\n\nYou have been invited to join MedGrid as a ${result.role.replace('_', ' ').toLowerCase()}.\n\n` +
-        `Click the link below to complete your registration:\n${inviteLink}\n\n` +
-        `This link expires on ${new Date(result.expiresAt).toLocaleDateString()}.\n\n` +
-        `MedGrid Team`
-    );
-    window.open(`mailto:${result.email}?subject=${subject}&body=${body}`);
-  };
-
   const ROLE_LABELS: Record<string, string> = {
     COORDINATION_MANAGER: 'Coordination Manager',
     INVENTORY_MANAGER: 'Inventory Manager',
@@ -102,7 +91,7 @@ function InviteResultDialog({
             <div>
               <DialogTitle>Invitation Created</DialogTitle>
               <DialogDescription>
-                Share this link with {result.email}
+                An email invitation has been sent to {result.email}
               </DialogDescription>
             </div>
           </div>
@@ -147,22 +136,15 @@ function InviteResultDialog({
             </div>
           </div>
 
-          <Alert className="border-orange-200 bg-orange-50 dark:border-orange-900/30 dark:bg-orange-950/20">
-            <AlertDescription className="text-xs text-orange-700 dark:text-orange-400">
-              This link is shown <strong>once</strong>. Send it to the user
-              before closing.
+          <Alert className="border-blue-200 bg-blue-50/50 dark:border-blue-900/30 dark:bg-blue-950/10">
+            <AlertDescription className="text-xs text-blue-700 dark:text-blue-400">
+              An invitation email has been sent. You can also copy the link
+              above to share it manually.
             </AlertDescription>
           </Alert>
         </div>
 
-        <DialogFooter className="flex-col gap-2 sm:flex-row">
-          <Button
-            variant="outline"
-            className="w-full sm:w-auto"
-            onClick={sendEmail}
-          >
-            Send via Email
-          </Button>
+        <DialogFooter className="justify-end">
           <Button
             className="w-full sm:w-auto"
             onClick={() => onOpenChange(false)}

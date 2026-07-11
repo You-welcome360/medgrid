@@ -170,3 +170,52 @@ export function balanceTopupEmail(data: {
     ),
   };
 }
+
+export function userInvitationEmail(data: {
+  role: string;
+  inviteLink: string;
+  expiresAt: Date;
+}): { subject: string; html: string } {
+  const roleLabel = data.role.replace('_', ' ').toLowerCase();
+  return {
+    subject: 'You have been invited to MedGrid',
+    html: base(
+      'Invitation to Join MedGrid',
+      `<p>Hello,</p>
+      <p>You have been invited to join MedGrid as a <strong>${roleLabel}</strong>.</p>
+      <p>Click the button below to complete your registration and set up your account. This link will expire on ${data.expiresAt.toLocaleDateString()}.</p>
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${data.inviteLink}" class="btn" style="color: #ffffff;">Complete Registration</a>
+      </div>
+      <p>If you have trouble clicking the button, copy and paste the link below into your browser:</p>
+      <p style="word-break: break-all; font-size: 13px; color: #666;">${data.inviteLink}</p>`
+    ),
+  };
+}
+
+export function facilityApprovedEmail(data: {
+  adminFirstName: string;
+  adminLastName: string;
+  facilityName: string;
+  adminEmail: string;
+  temporaryPassword: string;
+  loginUrl: string;
+}): { subject: string; html: string } {
+  return {
+    subject: `Your MedGrid Facility Account — ${data.facilityName}`,
+    html: base(
+      'Facility Approved ✅',
+      `<p>Dear ${data.adminFirstName} ${data.adminLastName},</p>
+      <p>Your facility <strong>"${data.facilityName}"</strong> has been approved on MedGrid.</p>
+      <p>Your administrator account has been created with the following temporary credentials:</p>
+      <div class="detail">
+        <p><strong>Email:</strong> ${data.adminEmail}</p>
+        <p><strong>Temporary Password:</strong> <code>${data.temporaryPassword}</code></p>
+      </div>
+      <p>Please log in and change your password immediately.</p>
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${data.loginUrl}" class="btn" style="color: #ffffff;">Login to MedGrid</a>
+      </div>`
+    ),
+  };
+}

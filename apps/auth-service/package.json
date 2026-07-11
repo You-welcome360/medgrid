@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@medgrid/database": "workspace:*",
+    "@medgrid/notifications": "workspace:*",
     "@medgrid/shared": "workspace:*",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
